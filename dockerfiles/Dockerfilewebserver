@@ -1,0 +1,49 @@
+ARG MOODLE_DOCKER_PHP_VERSION=7.4
+FROM moodlehq/moodle-php-apache:${MOODLE_DOCKER_PHP_VERSION}
+
+# Create moodledata directories
+# Workplace
+RUN mkdir /var/www/wp
+RUN mkdir /var/www/wp/moodledata /var/www/wp/behatdata /var/www/wp/phpunitdata
+RUN mkdir /var/www/wp/moodledata/311 /var/www/wp/moodledata/310
+RUN mkdir /var/www/wp/behatdata/311 /var/www/wp/behatdata/310
+RUN mkdir /var/www/wp/phpunitdata/311 /var/www/wp/phpunitdata/310
+RUN chown -R www-data /var/www/wp
+# LMS
+RUN mkdir /var/www/lms
+RUN mkdir /var/www/lms/moodledata /var/www/lms/behatdata /var/www/lms/phpunitdata
+RUN mkdir /var/www/lms/moodledata/400 /var/www/lms/moodledata/311 /var/www/lms/moodledata/310
+RUN mkdir /var/www/lms/behatdata/400 /var/www/lms/behatdata/311 /var/www/lms/behatdata/310
+RUN mkdir /var/www/lms/phpunitdata/400 /var/www/lms/phpunitdata/311 /var/www/lms/phpunitdata/310
+RUN chown -R www-data /var/www/lms
+
+# Install essentials
+RUN apt-get update
+RUN apt-get install -my mc nano tree gnupg curl libtool libssl-dev
+
+# Runkit7
+RUN pecl install -f runkit7
+COPY assets/web/runkit7.ini /usr/local/etc/php/conf.d/docker-php-runkit7.ini
+
+# Xdebug
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+COPY assets/web/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+# Subdomains
+COPY assets/web/wp.moodle.local.conf /etc/apache2/sites-available/wp.moodle.local.conf
+COPY assets/web/lms.moodle.local.conf /etc/apache2/sites-available/lms.moodle.local.conf
+RUN a2ensite wp.moodle.local
+RUN a2ensite lms.moodle.local
+
+# nvm
+ENV NVM_DIR /root/.nvm
+ENV NODE_VERSION 14.15.0
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+RUN echo '[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"' >> "$HOME/.bashrc"
+RUN bash -c ". /root/.nvm/nvm.sh --install && nvm alias default $NODE_VERSION && nvm use default"
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+# Grunt
+RUN npm install
+RUN npm install -g grunt-cli

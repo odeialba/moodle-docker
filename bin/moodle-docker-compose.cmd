@@ -10,6 +10,11 @@ IF "%MOODLE_DOCKER_DB%"=="" (
     EXIT /B 1
 )
 
+IF "%MOODLE_DOCKER_DB_WP%"=="" (
+    ECHO Error: MOODLE_DOCKER_DB_WP is not set
+    EXIT /B 1
+)
+
 PUSHD %cd%
 CD %~dp0..
 SET BASEDIR=%cd%
