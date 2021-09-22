@@ -74,7 +74,7 @@ $CFG->dblibrary = 'native';
 $CFG->dbhost    = 'db';
 $CFG->dbuser    = getenv('MOODLE_DOCKER_DBUSER');
 $CFG->dbpass    = getenv('MOODLE_DOCKER_DBPASS');
-$CFG->dbname    = $type === 'lms' ? getenv('MOODLE_DOCKER_DBNAME') : getenv('MOODLE_DOCKER_DBNAME_' . strtoupper($type));
+$CFG->dbname    = getenv('MOODLE_DOCKER_DBNAME_' . strtoupper($type)) ?: getenv('MOODLE_DOCKER_DBNAME');
 $CFG->dboptions = ['dbcollation' => getenv('MOODLE_DOCKER_DBCOLLATION')];
 
 $CFG->phpunit_dbname = getenv('MOODLE_DOCKER_DBNAME_PHPUNIT');

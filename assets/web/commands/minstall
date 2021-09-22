@@ -17,6 +17,7 @@ case "$1" in
 		eval "php ${dir}admin/tool/behat/cli/init.php -a -o ${command}"
 		;;
 	*)
-		echo $"Usage: $0 {moodle|phpunit|behat} [-d subdirectory] [arguments]"
+		SCRIPT_NAME=`basename "$0"`
+		echo "Usage: $SCRIPT_NAME {moodle|phpunit|behat} [-d subdirectory] [arguments]"
         exit 1
 esac

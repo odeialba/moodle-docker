@@ -3,6 +3,8 @@
 
 This repository contains Docker configuration aimed at Moodle developers and testers to easily deploy a testing environment for Moodle.
 
+This repository more specifically is adapted to run multimple instances of Moodle. Each of them will be placed in a directory under the main `MOODLE_DOCKER_WWWROOT` directory, named with the subdomain name that later will be used to access it.
+
 ## Features:
 * All supported database servers (PostgreSQL, MySQL, Micosoft SQL Server, Oracle XE)
 * Behat/Selenium configuration for Firefox and Chrome
@@ -17,15 +19,18 @@ This repository contains Docker configuration aimed at Moodle developers and tes
 * 3.25GB of RAM (if you choose [Microsoft SQL Server](https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-setup#prerequisites) as db server)
 
 ## Quick start
+By default, for the first Moodle instance `lms` directory and subdomain will be used, as well as `moodle.local` as the main domain in `MOODLE_DOCKER_WEB_HOST` enviromnent variable.
 
 ```bash
 # Set up path to Moodle code
 export MOODLE_DOCKER_WWWROOT=/path/to/moodle/code
 # Choose a db server (Currently supported: pgsql, mariadb, mysql, mssql, oracle)
 export MOODLE_DOCKER_DB=pgsql
+# Set up the main domain for the local Moodle instances
+export MOODLE_DOCKER_WEB_HOST=moodle.local
 
 # Ensure customized config.php for the Docker containers is in place
-cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/config.php
+cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/lms/config.php
 
 # [..] IMPORTANT: For Mac users see next point
 
@@ -34,6 +39,10 @@ bin/moodle-docker-compose up -d
 
 # Wait for DB to come up (important for oracle/mssql)
 bin/moodle-docker-wait-for-db
+
+# Install DB for the lms instance
+bin/moodle-docker-bash webserver minstall moodle -d lms
+# Note: See "Custom commands" section for more info
 
 # Work with the containers (see below)
 # [..]
@@ -49,43 +58,83 @@ Docker is known to be really slow for Mac users. Run the next commands to fix th
 # [..] Follow the "Quick start" step until the "IMPORTANT" note. Then continue with this commands
 # This script will set up a NFS link between your $MOODLE_DOCKER_WWWROOT and the containers
 # We change the permissions of the script to be able to execute it
-chmod +x bin/nfs-script.sh
+chmod +x scripts/nfs-script.sh
 # Now we run the script
-./bin/nfs-script.sh
+./scripts/nfs-script.sh
 # [..] Continue with the "Quick start" from after the "IMPORTANT" note
 ```
 
-## Run several Moodle instances
+## Stop and restart containers
 
-By default, the script will load a single instance. If you want to run two
-or more different versions of Moodle at the same time, you have to add this
-environment variable prior running any of the steps at `Quick start`:
+`bin/moodle-docker-compose down` which was used above after using the containers stops and destroys the containers. If you want to use your containers continuously for manual testing or development without starting them up from scratch everytime you use them, you can also just stop without destroying them. With this approach, you can restart your containers sometime later, they will keep their data and won't be destroyed completely until you run `bin/moodle-docker-compose down`.
 
 ```bash
-# Define a project name; it will appear as a prefix on container names.
-export COMPOSE_PROJECT_NAME=moodle34
+# Stop containers
+bin/moodle-docker-compose stop
 
-# Use a different public web port from those already taken
-export MOODLE_DOCKER_WEB_PORT=1234
-
-# [..] run all "Quick steps" now
+# Restart containers
+bin/moodle-docker-compose start
 ```
 
-Having set up several Moodle instances, you need to have set up
-the environment variable `COMPOSE_PROJECT_NAME` to just refer
-to the instance you expect to. See
-[envvars](https://docs.docker.com/compose/reference/envvars/)
-to see more about `docker-compose` environment variables.
+## Custom commands
+
+### moodle-docker-bash
+This script was created to easily run any command inside any container. First parameter will be the container name and second one will be the command (wrap it within single quotes). Example:
+```bash
+~$ bin/moodle-docker-bash webserver 'pwd'
+/var/www/html
+```
+### minstall
+This script was created to be automatically installed in the webserver container and to easily run any install command. First parameter will be the database to install (moodle, phpunit or behat), the second one (`-d`) the subdirectory of the Moodle instance and the rest will be all the parameters that want to be used to override the default one. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Examples:
+```bash
+~$ bin/moodle-docker-bash webserver minstall moodle -d lms --fullname="Moodle first instance" --adminpass="admin"
+-------------------------------------------------------------------------------
+== Setting up database ==
+-->System
+```
+```bash
+~$ bin/moodle-docker-bash webserver minstall phpunit -d lms
+Initialising Moodle PHPUnit test environment...
+```
+```bash
+~$ bin/moodle-docker-bash webserver minstall behat -d lms
+You are already using the latest available Composer version 2.1.8 (stable channel).
+Installing dependencies from lock file (including require-dev)
+```
+### mtest
+This script was created to be automatically installed in the webserver container and to easily run any test command. First parameter will be the tests to be run (phpunit or behat), the second one (`-d`) the subdirectory of the Moodle instance and the rest will be all the parameters that want to be used to override the default ones. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Examples:
+```bash
+~$ bin/moodle-docker-bash webserver mtest phpunit -d lms --filter auth_manual_testcase
+Moodle 3.11.3 (Build: 20210913), 8c02bd32af238dfc83727fb4260b9caf1b622fdb
+Php: 7.4.23, pgsql: 11.13 (Debian 11.13-1.pgdg90+1), OS: Linux 5.10.47-linuxkit x86_64
+```
+```bash
+~$ bin/moodle-docker-bash webserver mtest behat -d lms --tags=@auth_manual
+Running single behat site:
+```
+### mutil
+This script was created to be automatically installed in the webserver container and to easily access the `util.php` files of phpunit and behat. First parameter will be the test environment (phpunit or behat), the second one (`-d`) the subdirectory of the Moodle instance and the rest will be all the parameters that want to be used to override the default ones. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Examples:
+```bash
+~$ bin/moodle-docker-bash webserver mutil phpunit -d lms --drop
+Purging dataroot:
+Dropping tables:
+```
+```bash
+~$ bin/moodle-docker-bash webserver mutil behat -d lms --drop
+Dropping tables:
+```
 
 ## Use containers for running behat tests
 
 ```bash
 # Initialize behat environment
-bin/moodle-docker-compose exec webserver php admin/tool/behat/cli/init.php
+~$ bin/moodle-docker-bash webserver minstall behat -d lms
+# Note: See "Custom commands" section for more info
 # [..]
 
 # Run behat tests
-bin/moodle-docker-compose exec -u www-data webserver php admin/tool/behat/cli/run.php --tags=@auth_manual
+~$ bin/moodle-docker-bash webserver mtest behat -d lms --tags=@auth_manual
+# Note: See "Custom commands" section for more info
 Running single behat site:
 Moodle 3.4dev (Build: 20171006), 33a3ec7c9378e64c6f15c688a3c68a39114aa29d
 Php: 7.1.9, pgsql: 9.6.5, OS: Linux 4.9.49-moby x86_64
@@ -100,16 +149,16 @@ Started at 25-05-2017, 19:04
 
 Notes:
 * The behat faildump directory is exposed at http://localhost:8000/_/faildumps/.
-
 ## Use containers for running phpunit tests
-
 ```bash
 # Initialize phpunit environment
-bin/moodle-docker-compose exec webserver php admin/tool/phpunit/cli/init.php
+~$ bin/moodle-docker-bash webserver minstall phpunit -d lms
+# Note: See "Custom commands" section for more info
 # [..]
 
 # Run phpunit tests
-bin/moodle-docker-compose exec webserver vendor/bin/phpunit auth_manual_testcase auth/manual/tests/manual_test.php
+~$ bin/moodle-docker-bash webserver mtest phpunit -d lms auth_manual_testcase auth/manual/tests/manual_test.php
+# Note: See "Custom commands" section for more info
 Moodle 3.4dev (Build: 20171006), 33a3ec7c9378e64c6f15c688a3c68a39114aa29d
 Php: 7.1.9, pgsql: 9.6.5, OS: Linux 4.9.49-moby x86_64
 PHPUnit 5.5.7 by Sebastian Bergmann and contributors.
@@ -120,7 +169,6 @@ Time: 4.45 seconds, Memory: 38.00MB
 
 OK (2 tests, 7 assertions)
 ```
-
 Notes:
 * If you want to run test with coverage report, use command: `bin/moodle-docker-compose exec webserver phpdbg -qrr vendor/bin/phpunit --coverage-text auth_manual_testcase auth/manual/tests/manual_test.php`
 
@@ -128,13 +176,81 @@ Notes:
 
 ```bash
 # Initialize Moodle database for manual testing
-bin/moodle-docker-compose exec webserver php admin/cli/install_database.php --agree-license --fullname="Docker moodle" --shortname="docker_moodle" --summary="Docker moodle site" --adminpass="test" --adminemail="admin@example.com"
+bin/moodle-docker-bash webserver minstall moodle -d lms
 ```
 
 Notes:
+* This will automatically create a database with default values. If you wish to change those values, add any of these (or others) at the end: `--fullname="Docker moodle"`, `--shortname="docker_moodle"`, `--summary="Docker moodle site"`, `--adminemail="admin@example.com"`
 * Moodle is configured to listen on `http://localhost:8000/`.
 * Mailhog is listening on `http://localhost:8000/_/mail` to view emails which Moodle has sent out.
 * The admin `username` you need to use for logging in is `admin` by default. You can customize it by passing `--adminuser='myusername'`
+* The admin `password` you need to use for logging in is `admin` by default. You can customize it by passing `--adminpass='myusername'`
+
+## Using VNC to view behat tests
+
+If `MOODLE_DOCKER_SELENIUM_VNC_PORT` is defined, selenium will expose a VNC session on the port specified so behat tests can be viewed in progress.
+
+For example, if you set `MOODLE_DOCKER_SELENIUM_VNC_PORT` to 5900..
+1. Download a VNC client: https://www.realvnc.com/en/connect/download/viewer/
+2. With the containers running, enter 0.0.0.0:5900 as the port in VNC Viewer. You will be prompted for a password. The password is 'secret'.
+3. You should be able to see an empty Desktop. When you run any Behat tests a browser will popup and you will see the tests execute.
+
+## Using XDebug for live debugging
+
+The XDebug PHP Extension is included and running in this setup by default.
+
+If you want to disable and re-enable XDebug during the lifetime of the webserver container, you can achieve this with these additional commands:
+
+```
+# Make the helpful script executable (Note: Run only once)
+chmod +x bin/xdebug
+
+# Disable XDebug extension in Apache and restart the webserver container
+bin/xdebug webserver disable
+
+# Enable XDebug extension in Apache and restart the webserver container
+bin/xdebug webserver enable
+```
+
+Please take special care of the value of `xdebug.client_host` in `/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini` in the webserver container (`assets/web/php/xdebug.ini` in this repository), which is needed to connect from the container to the host. The given value `host.docker.internal` is a special DNS name for this purpose within Docker for Windows and Docker for Mac. If you are running on another Docker environment, you might want to try the value `localhost` instead or even set the hostname/IP of the host directly.
+
+## Adminer
+This repository will install adminer database administrator by default. To access it, simply go to http://admine.moodle.local/ and fill in the database credentials.
+
+## Create new Moodle instances
+It might look complicated, but if you follow the steps, it is quite simple.
+### Base config
+To create more Moodle instances, first you need to decide the name of the directory and subdomain that instance will be placed in (in this example `wp` will be used, as it is already implemented). Create a new directory under `MOODLE_DOCKER_WWWROOT` and call it `wp`. Create the config file for that new instance.
+
+`cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/wp/config.php`
+
+Change the value of the `$type` variable to `wp`.
+
+By now the new instance will be accessible from http://moodle.local/wp, but as the necessary directories are not created yet, we will get an error.
+
+Create the directories copying the one from the main instance and change the owner:
+`bin/moodle-docker-bash webserver 'cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp'`
+
+To have it automatically done next time you build the container, add the next line to the `dockerfiler/Dockerfilewebserver` file:
+```
+RUN cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp
+```
+
+### Database
+By now the new instance will be accessible from http://moodle.local/wp, but it will be using the same database as the original instance. There are two ways to solve this: Use different prefix for the new instance (`$CFG->prefix` in the new instance's `config.php` file), or create a new database for the new instance.
+
+To create the new database automatically next time you build the container, add the new database name to the `POSTGRES_MULTIPLE_DATABASES` (comma separated values) environment variable of the `db` container in `base.yml` file. Then, add a new environment variable to the `webserver` container and call it `MOODLE_DOCKER_DBNAME_WP` and give it the value of the name of the new database.
+
+### Subdomain
+If you want to access the new Moodle instance via a subdomain, copy the `assets/web/apache/lms.moodle.local.conf` file and create the `assets/web/apache/wp.moodle.local.conf` file, replacing all the `lms` occurrences with `wp` inside it.
+
+Then, add the next two lines to `dockerfiler/Dockerfilewebserver` file:
+```
+COPY assets/web/apache/wp.moodle.local.conf /etc/apache2/sites-available/wp.moodle.local.conf
+RUN a2ensite wp.moodle.local
+```
+
+Now, if you destroy all your containers and it's images, and run `bin/moodle-docker-compose up -d`, all the new containers will be created correctly. And if you access http://wp.moodle.local/, you should see your new Moodle instance (run `bin/moodle-docker-bash webserver minstall moodle -d wp` to easily install the database).
 
 ## Use containers for running behat tests for the Moodle App
 
@@ -150,14 +266,14 @@ For both options, you also need to set `MOODLE_DOCKER_BROWSER` to "chrome".
 
 ```bash
 # Install local_moodlemobileapp plugin
-git clone git://github.com/moodlehq/moodle-local_moodlemobileapp "$MOODLE_DOCKER_WWWROOT/local/moodlemobileapp"
+~$ git clone git://github.com/moodlehq/moodle-local_moodlemobileapp "$MOODLE_DOCKER_WWWROOT/local/moodlemobileapp"
 
 # Initialize behat environment
-bin/moodle-docker-compose exec webserver php admin/tool/behat/cli/init.php
+~$ bin/moodle-docker-compose exec webserver php admin/tool/behat/cli/init.php
 # (you should see "Configured app tests for version X.X.X" here)
 
 # Run behat tests
-bin/moodle-docker-compose exec -u www-data webserver php admin/tool/behat/cli/run.php --tags="@app&&@mod_login"
+~$ bin/moodle-docker-compose exec -u www-data webserver php admin/tool/behat/cli/run.php --tags="@app&&@mod_login"
 Running single behat site:
 Moodle 4.0dev (Build: 20200615), a2b286ce176fbe361f0889abc8f30f043cd664ae
 Php: 7.2.30, pgsql: 11.8 (Debian 11.8-1.pgdg90+1), OS: Linux 5.3.0-61-generic x86_64
@@ -182,27 +298,6 @@ docker run --volume $MOODLE_DOCKER_APP_PATH:/app --workdir /app node:14 npm run 
 
 You can learn more about writing tests for the app in [Acceptance testing for the Moodle App](https://docs.moodle.org/dev/Acceptance_testing_for_the_Moodle_App).
 
-## Using VNC to view behat tests
-
-If `MOODLE_DOCKER_SELENIUM_VNC_PORT` is defined, selenium will expose a VNC session on the port specified so behat tests can be viewed in progress.
-
-For example, if you set `MOODLE_DOCKER_SELENIUM_VNC_PORT` to 5900..
-1. Download a VNC client: https://www.realvnc.com/en/connect/download/viewer/
-2. With the containers running, enter 0.0.0.0:5900 as the port in VNC Viewer. You will be prompted for a password. The password is 'secret'.
-3. You should be able to see an empty Desktop. When you run any Behat tests a browser will popup and you will see the tests execute.
-
-## Stop and restart containers
-
-`bin/moodle-docker-compose down` which was used above after using the containers stops and destroys the containers. If you want to use your containers continuously for manual testing or development without starting them up from scratch everytime you use them, you can also just stop without destroying them. With this approach, you can restart your containers sometime later, they will keep their data and won't be destroyed completely until you run `bin/moodle-docker-compose down`.
-
-```bash
-# Stop containers
-bin/moodle-docker-compose stop
-
-# Restart containers
-bin/moodle-docker-compose start
-```
-
 ## Environment variables
 
 You can change the configuration of the docker images by setting various environment variables before calling `bin/moodle-docker-compose up`.
@@ -220,44 +315,6 @@ You can change the configuration of the docker images by setting various environ
 | `MOODLE_DOCKER_APP_PATH`                  | no        | path on your file system              | not set       | If set and the chrome browser is selected, it will start an instance of the Moodle app from your local codebase |
 | `MOODLE_DOCKER_APP_VERSION`               | no        | a valid [app docker image version](https://docs.moodle.org/dev/Moodle_App_Docker_images) | not set       | If set will start an instance of the Moodle app if the chrome browser is selected |
 | `MOODLE_DOCKER_APP_RUNTIME`               | no        | 'ionic3' or 'ionic5'                  | not set       | Set this to indicate the runtime being used in the Moodle app. In most cases, this can be ignored because the runtime is guessed automatically (except on Windows using the `.cmd` binary). In case you need to set it manually and you're not sure which one it is, versions 3.9.5 and later should be using Ionic 5. |
-
-## Using XDebug for live debugging
-
-The XDebug PHP Extension is not included in this setup and there are reasons not to include it by default.
-
-However, if you want to work with XDebug, especially for live debugging, you can add XDebug to a running webserver container easily:
-
-```
-# Install XDebug extension with PECL
-moodle-docker-compose exec webserver pecl install xdebug
-
-# Set some wise setting for live debugging - change this as needed
-read -r -d '' conf <<'EOF'
-; Settings for Xdebug Docker configuration
-xdebug.mode = debug
-xdebug.client_host = host.docker.internal
-EOF
-moodle-docker-compose exec webserver bash -c "echo '$conf' >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini"
-
-# Enable XDebug extension in Apache and restart the webserver container
-moodle-docker-compose exec webserver docker-php-ext-enable xdebug
-moodle-docker-compose restart webserver
-```
-
-While setting these XDebug settings depending on your local need, please take special care of the value of `xdebug.client_host` which is needed to connect from the container to the host. The given value `host.docker.internal` is a special DNS name for this purpose within Docker for Windows and Docker for Mac. If you are running on another Docker environment, you might want to try the value `localhost` instead or even set the hostname/IP of the host directly.
-
-After these commands, XDebug ist enabled and ready to be used in the webserver container.
-If you want to disable and re-enable XDebug during the lifetime of the webserver container, you can achieve this with these additional commands:
-
-```
-# Disable XDebug extension in Apache and restart the webserver container
-moodle-docker-compose exec webserver sed -i 's/^zend_extension=/; zend_extension=/' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-moodle-docker-compose restart webserver
-
-# Enable XDebug extension in Apache and restart the webserver container
-moodle-docker-compose exec webserver sed -i 's/^; zend_extension=/zend_extension=/' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-moodle-docker-compose restart webserver
-```
 
 ## Advanced usage
 

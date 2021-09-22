@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# see https://carstenwindler.de/php/enable-xdebug-on-demand-in-your-local-docker-environment/
+case $2 in
+    enable)
+        action='[ -f /usr/local/etc/php/disabled/docker-php-ext-xdebug.ini ] && cd /usr/local/etc/php/ && mv disabled/docker-php-ext-xdebug.ini conf.d/ || echo "Xdebug already enabled"'
+        ;;
+    disable)
+        action='[ -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ] && cd /usr/local/etc/php/ && mkdir -p disabled/ && mv conf.d/docker-php-ext-xdebug.ini disabled/ || echo "Xdebug already disabled"'
+        ;;
+    *)
+        SCRIPT_NAME=`basename "$0"`
+        echo "Usage: $SCRIPT_NAME {container_name} {enable|disable}"
+        exit 1
+esac
+
+docker exec $1 bash -c "$action"
+
+echo "Restarting container"
+docker restart $1
+echo "Container restarted"
+
+docker exec $1 bash -c '$(php -m | grep -q Xdebug) && echo "Status: Xdebug ENABLED" || echo "Status: Xdebug DISABLED"'

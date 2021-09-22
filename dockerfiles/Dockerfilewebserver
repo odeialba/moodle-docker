@@ -2,13 +2,6 @@ ARG MOODLE_DOCKER_PHP_VERSION=7.4
 FROM moodlehq/moodle-php-apache:${MOODLE_DOCKER_PHP_VERSION}
 
 # Create moodledata directories
-# Workplace
-RUN mkdir /var/www/wp
-RUN mkdir /var/www/wp/moodledata /var/www/wp/behatdata /var/www/wp/phpunitdata
-RUN mkdir /var/www/wp/moodledata/311 /var/www/wp/moodledata/310
-RUN mkdir /var/www/wp/behatdata/311 /var/www/wp/behatdata/310
-RUN mkdir /var/www/wp/phpunitdata/311 /var/www/wp/phpunitdata/310
-RUN chown -R www-data /var/www/wp
 # LMS
 RUN mkdir /var/www/lms
 RUN mkdir /var/www/lms/moodledata /var/www/lms/behatdata /var/www/lms/phpunitdata
@@ -16,6 +9,19 @@ RUN mkdir /var/www/lms/moodledata/400 /var/www/lms/moodledata/311 /var/www/lms/m
 RUN mkdir /var/www/lms/behatdata/400 /var/www/lms/behatdata/311 /var/www/lms/behatdata/310
 RUN mkdir /var/www/lms/phpunitdata/400 /var/www/lms/phpunitdata/311 /var/www/lms/phpunitdata/310
 RUN chown -R www-data /var/www/lms
+# WP
+RUN cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp
+
+# Subdomains
+COPY assets/web/apache/lms.moodle.local.conf /etc/apache2/sites-available/lms.moodle.local.conf
+RUN a2ensite lms.moodle.local
+COPY assets/web/apache/wp.moodle.local.conf /etc/apache2/sites-available/wp.moodle.local.conf
+RUN a2ensite wp.moodle.local
+
+# Adminer
+COPY assets/web/adminer /var/www/adminer
+COPY assets/web/apache/adminer.moodle.local.conf /etc/apache2/sites-available/adminer.moodle.local.conf
+RUN a2ensite adminer.moodle.local
 
 # Install essentials
 RUN apt-get update
@@ -26,19 +32,8 @@ RUN pecl install -f runkit7
 COPY assets/web/php/runkit7.ini /usr/local/etc/php/conf.d/docker-php-runkit7.ini
 
 # Xdebug
-RUN pecl install xdebug && docker-php-ext-enable xdebug
+RUN pecl install -f xdebug && docker-php-ext-enable xdebug
 COPY assets/web/php/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-
-# Adminer
-COPY assets/web/adminer /var/www/adminer
-
-# Subdomains
-COPY assets/web/apache/wp.moodle.local.conf /etc/apache2/sites-available/wp.moodle.local.conf
-COPY assets/web/apache/lms.moodle.local.conf /etc/apache2/sites-available/lms.moodle.local.conf
-COPY assets/web/apache/adminer.moodle.local.conf /etc/apache2/sites-available/adminer.moodle.local.conf
-RUN a2ensite wp.moodle.local
-RUN a2ensite lms.moodle.local
-RUN a2ensite adminer.moodle.local
 
 # nvm
 ENV NVM_DIR /root/.nvm
