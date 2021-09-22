@@ -1,0 +1,30 @@
+dir=''
+command=''
+quoteopen='no'
+for (( i=2; i<=$#; i++)); do
+	case "${!i}" in
+		--dir|-d)
+			j=$((i+1))
+			dir="${!j}"
+			i=j
+			;;
+		*)
+			part=${!i}
+			if [[ "$quoteopen" == 'yes' && "$part" == "-"* ]]; then
+				command="$command\""
+				quoteopen='no'
+			fi
+			eqsign="${part//[^=]}"
+			if [ ${#eqsign} -eq 1 ]; then
+				part="${part//=/=\"}"
+				quoteopen='yes'
+			fi
+			command="$command $part"
+			;;
+	esac
+done
+
+if [ "$quoteopen" == 'yes' ]; then
+	command="$command\""
+	quoteopen='no'
+fi

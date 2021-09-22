@@ -1,0 +1,19 @@
+DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. "$DIR/mcommon"
+
+if [ "${dir}" != "" ]; then
+	dir="${dir}/"
+fi
+
+case "$1" in
+	phpunit)
+		eval "php ${dir}admin/tool/phpunit/cli/util.php ${command}"
+		;;
+	behat)
+		eval "php ${dir}admin/tool/behat/cli/util.php ${command}"
+		;;
+	*)
+		echo $"Usage: $0 {phpunit|behat} [-d subdirectory] [arguments]"
+        exit 1
+esac

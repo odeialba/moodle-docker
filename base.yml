@@ -11,8 +11,8 @@ services:
         MOODLE_DOCKER_PHP_VERSION: "${MOODLE_DOCKER_PHP_VERSION}"
     volumes:
       - "${MOODLE_DOCKER_WWWROOT}:/var/www/html"
-      - "${ASSETDIR}/web/apache2_faildumps.conf:/etc/apache2/conf-enabled/apache2_faildumps.conf"
-      - "${ASSETDIR}/web/apache2_directory.conf:/etc/apache2/conf-enabled/apache2_directory.conf"
+      - "${ASSETDIR}/web/apache/apache2_faildumps.conf:/etc/apache2/conf-enabled/apache2_faildumps.conf"
+      - "${ASSETDIR}/web/apache/apache2_directory.conf:/etc/apache2/conf-enabled/apache2_directory.conf"
     environment:
       MOODLE_DOCKER_DBTYPE: pgsql
       MOODLE_DOCKER_DBNAME: moodlelms

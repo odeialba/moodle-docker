@@ -2,7 +2,7 @@ version: "2"
 services:
   webserver:
     volumes:
-      - "${ASSETDIR}/web/apache2_mailhog.conf:/etc/apache2/conf-enabled/apache2_mailhog.conf"
+      - "${ASSETDIR}/web/apache/apache2_mailhog.conf:/etc/apache2/conf-enabled/apache2_mailhog.conf"
     depends_on:
       - mailhog
   mailhog:

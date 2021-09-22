@@ -19,31 +19,45 @@ RUN chown -R www-data /var/www/lms
 
 # Install essentials
 RUN apt-get update
-RUN apt-get install -my mc nano tree gnupg curl libtool libssl-dev
+RUN apt-get install -my mc nano tree gnupg curl libtool libssl-dev m4 automake autoconf build-essential pkg-config
 
 # Runkit7
 RUN pecl install -f runkit7
-COPY assets/web/runkit7.ini /usr/local/etc/php/conf.d/docker-php-runkit7.ini
+COPY assets/web/php/runkit7.ini /usr/local/etc/php/conf.d/docker-php-runkit7.ini
 
 # Xdebug
 RUN pecl install xdebug && docker-php-ext-enable xdebug
-COPY assets/web/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+COPY assets/web/php/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+# Adminer
+COPY assets/web/adminer /var/www/adminer
 
 # Subdomains
-COPY assets/web/wp.moodle.local.conf /etc/apache2/sites-available/wp.moodle.local.conf
-COPY assets/web/lms.moodle.local.conf /etc/apache2/sites-available/lms.moodle.local.conf
+COPY assets/web/apache/wp.moodle.local.conf /etc/apache2/sites-available/wp.moodle.local.conf
+COPY assets/web/apache/lms.moodle.local.conf /etc/apache2/sites-available/lms.moodle.local.conf
+COPY assets/web/apache/adminer.moodle.local.conf /etc/apache2/sites-available/adminer.moodle.local.conf
 RUN a2ensite wp.moodle.local
 RUN a2ensite lms.moodle.local
+RUN a2ensite adminer.moodle.local
 
 # nvm
 ENV NVM_DIR /root/.nvm
 ENV NODE_VERSION 14.15.0
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-RUN echo '[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"' >> "$HOME/.bashrc"
 RUN bash -c ". /root/.nvm/nvm.sh --install && nvm alias default $NODE_VERSION && nvm use default"
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
 # Grunt
 RUN npm install
-RUN npm install -g grunt-cli
+RUN npm install -g --save-dev grunt-cli grunt-contrib-watch grunt-contrib-uglify grunt-contrib-less grunt-load-gruntfile grunt-eslint grunt-babel grunt-jsdoc grunt-sass grunt-stylelint
+
+# Custom commands
+COPY assets/web/commands/minstall /usr/local/bin/minstall
+RUN chmod +x /usr/local/bin/minstall
+COPY assets/web/commands/mtest /usr/local/bin/mtest
+RUN chmod +x /usr/local/bin/mtest
+COPY assets/web/commands/mutil /usr/local/bin/mutil
+RUN chmod +x /usr/local/bin/mutil
+COPY assets/web/commands/mcommon /usr/local/bin/mcommon
+RUN chmod +x /usr/local/bin/mcommon
