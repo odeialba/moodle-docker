@@ -1,5 +1,5 @@
 # moodle-docker: Docker Containers for Moodle Developers
-[![Build Status](https://github.com/moodlehq/moodle-docker/workflows/moodle-docker%20CI/badge.svg?branch=master)](https://github.com/moodlehq/moodle-docker/actions/workflows/ci.yml?query=branch%3Amaster)
+[![Build Status](https://github.com/odeialba/moodle-docker/workflows/moodle-docker%20CI/badge.svg?branch=wp)](https://github.com/odeialba/moodle-docker/actions/workflows/ci.yml?query=branch%3Awp)
 
 This repository contains Docker configuration aimed at Moodle developers and testers to easily deploy a testing environment for Moodle.
 
@@ -215,7 +215,7 @@ bin/xdebug webserver enable
 Please take special care of the value of `xdebug.client_host` in `/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini` in the webserver container (`assets/web/php/xdebug.ini` in this repository), which is needed to connect from the container to the host. The given value `host.docker.internal` is a special DNS name for this purpose within Docker for Windows and Docker for Mac. If you are running on another Docker environment, you might want to try the value `localhost` instead or even set the hostname/IP of the host directly.
 
 ## Adminer
-This repository will install adminer database administrator by default. To access it, simply go to http://admine.moodle.local/ and fill in the database credentials.
+This repository will install adminer database administrator by default. To access it, simply go to http://adminer.moodle.local/ and fill in the database credentials.
 
 ## Create new Moodle instances
 It might look complicated, but if you follow the steps, it is quite simple.
@@ -226,7 +226,7 @@ To create more Moodle instances, first you need to decide the name of the direct
 
 Change the value of the `$type` variable to `wp`.
 
-By now the new instance will be accessible from http://moodle.local/wp, but as the necessary directories are not created yet, we will get an error.
+By now the new instance will be accessible from http://moodle.local/wp, but as the necessary `dataroot` directories are not created yet, we will get an error.
 
 Create the directories copying the one from the main instance and change the owner:
 `bin/moodle-docker-bash webserver 'cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp'`
@@ -236,12 +236,14 @@ To have it automatically done next time you build the container, add the next li
 RUN cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp
 ```
 
-### Database
-By now the new instance will be accessible from http://moodle.local/wp, but it will be using the same database as the original instance. It will also be using a different database prefix, so everything will work fine. But if you want to create a new database for the new instance, continue reading.
+By now the new instance will be accessible from http://moodle.local/wp.
+
+### Database [Optional]
+The new Moodle instance will be using the same database as the original instance with a different database prefix, so everything will work fine. But if you want to create a new database for the new instance, continue reading.
 
 To create the new database automatically next time you build the container, add the new database name to the `POSTGRES_MULTIPLE_DATABASES` (comma separated values) environment variable of the `db` container in `base.yml` file. Then, add a new environment variable to the `webserver` container and call it `MOODLE_DOCKER_DBNAME_WP` and give it the value of the name of the new database.
 
-### Subdomain
+### Subdomain [Optional]
 If you want to access the new Moodle instance via a subdomain, copy the `assets/web/apache/lms.moodle.local.conf` file and create the `assets/web/apache/wp.moodle.local.conf` file, replacing all the `lms` occurrences with `wp` inside it.
 
 Then, add the next two lines to `dockerfiler/Dockerfilewebserver` file:
