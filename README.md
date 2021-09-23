@@ -237,7 +237,7 @@ RUN cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp
 ```
 
 ### Database
-By now the new instance will be accessible from http://moodle.local/wp, but it will be using the same database as the original instance. There are two ways to solve this: Use different prefix for the new instance (`$CFG->prefix` in the new instance's `config.php` file), or create a new database for the new instance.
+By now the new instance will be accessible from http://moodle.local/wp, but it will be using the same database as the original instance. It will also be using a different database prefix, so everything will work fine. But if you want to create a new database for the new instance, continue reading.
 
 To create the new database automatically next time you build the container, add the new database name to the `POSTGRES_MULTIPLE_DATABASES` (comma separated values) environment variable of the `db` container in `base.yml` file. Then, add a new environment variable to the `webserver` container and call it `MOODLE_DOCKER_DBNAME_WP` and give it the value of the name of the new database.
 
