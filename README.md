@@ -1,9 +1,11 @@
 # moodle-docker: Docker Containers for Moodle Developers
+
 This repository contains Docker configuration aimed at Moodle developers and testers to easily deploy a testing environment for Moodle.
 
 This repository more specifically is adapted to run multimple instances of Moodle. Each of them will be placed in a directory under the main `MOODLE_DOCKER_WWWROOT` directory, named with the subdomain name that later will be used to access it.
 
 ## Features:
+
 * All supported database servers (PostgreSQL, MySQL, Micosoft SQL Server, Oracle XE)
 * Behat/Selenium configuration for Firefox and Chrome
 * Catch-all smtp server and web interface to messages using [MailHog](https://github.com/mailhog/MailHog/)
@@ -13,10 +15,12 @@ This repository more specifically is adapted to run multimple instances of Moodl
 * Backed by [automated tests](https://travis-ci.com/moodlehq/moodle-docker/branches)
 
 ## Prerequisites
+
 * [Docker](https://docs.docker.com) and [Docker Compose](https://docs.docker.com/compose/) installed
 * 3.25GB of RAM (if you choose [Microsoft SQL Server](https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-setup#prerequisites) as db server)
 
 ## Quick start
+
 By default, for the first Moodle instance `lms` directory and subdomain will be used, as well as `moodle.local` as the main domain in `MOODLE_DOCKER_WEB_HOST` enviromnent variable.
 
 ```bash
@@ -82,6 +86,7 @@ This script was created to easily run any command inside any container. First pa
 ~$ bin/moodle-docker-bash webserver 'pwd'
 /var/www/html
 ```
+
 ### minstall
 This script was created to be automatically installed in the webserver container and to easily run any install command. First parameter will be the database to install (moodle, phpunit or behat), the second one (`-d`) the subdirectory of the Moodle instance and the rest will be all the parameters that want to be used to override the default one. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Examples:
 ```bash
@@ -99,6 +104,7 @@ Initialising Moodle PHPUnit test environment...
 You are already using the latest available Composer version 2.1.8 (stable channel).
 Installing dependencies from lock file (including require-dev)
 ```
+
 ### mtest
 This script was created to be automatically installed in the webserver container and to easily run any test command. First parameter will be the tests to be run (phpunit or behat), the second one (`-d`) the subdirectory of the Moodle instance and the rest will be all the parameters that want to be used to override the default ones. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Examples:
 ```bash
@@ -110,6 +116,7 @@ Php: 7.4.23, pgsql: 11.13 (Debian 11.13-1.pgdg90+1), OS: Linux 5.10.47-linuxkit 
 ~$ bin/moodle-docker-bash webserver mtest behat -d lms --tags=@auth_manual
 Running single behat site:
 ```
+
 ### mutil
 This script was created to be automatically installed in the webserver container and to easily access the `util.php` files of phpunit and behat. First parameter will be the test environment (phpunit or behat), the second one (`-d`) the subdirectory of the Moodle instance and the rest will be all the parameters that want to be used to override the default ones. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Examples:
 ```bash
@@ -147,7 +154,9 @@ Started at 25-05-2017, 19:04
 
 Notes:
 * The behat faildump directory is exposed at http://localhost:8000/_/faildumps/.
+
 ## Use containers for running phpunit tests
+
 ```bash
 # Initialize phpunit environment
 ~$ bin/moodle-docker-bash webserver minstall phpunit -d lms
@@ -199,7 +208,7 @@ The XDebug PHP Extension is included and running in this setup by default.
 
 If you want to disable and re-enable XDebug during the lifetime of the webserver container, you can achieve this with these additional commands:
 
-```
+```bash
 # Make the helpful script executable (Note: Run only once)
 chmod +x bin/xdebug
 
@@ -213,24 +222,30 @@ bin/xdebug webserver enable
 Please take special care of the value of `xdebug.client_host` in `/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini` in the webserver container (`assets/web/php/xdebug.ini` in this repository), which is needed to connect from the container to the host. The given value `host.docker.internal` is a special DNS name for this purpose within Docker for Windows and Docker for Mac. If you are running on another Docker environment, you might want to try the value `localhost` instead or even set the hostname/IP of the host directly.
 
 ## Adminer
+
 This repository will install adminer database administrator by default. To access it, simply go to http://adminer.moodle.local/ and fill in the database credentials.
 
 ## Create new Moodle instances
+
 It might look complicated, but if you follow the steps, it is quite simple.
+
 ### Base config
 To create more Moodle instances, first you need to decide the name of the directory and subdomain that instance will be placed in (in this example `wp` will be used, as it is already implemented). Create a new directory under `MOODLE_DOCKER_WWWROOT` and call it `wp`. Create the config file for that new instance.
-
-`cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/wp/config.php`
+```bash
+cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/wp/config.php
+```
 
 Change the value of the `$type` variable to `wp`.
 
 By now the new instance will be accessible from http://moodle.local/wp, but as the necessary `dataroot` directories are not created yet, we will get an error.
 
 Create the directories copying the one from the main instance and change the owner:
-`bin/moodle-docker-bash webserver 'cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp'`
+```bash
+bin/moodle-docker-bash webserver 'cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp'
+```
 
 To have it automatically done next time you build the container, add the next line to the `dockerfiler/Dockerfilewebserver` file:
-```
+```dockerfile
 RUN cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp
 ```
 
@@ -245,7 +260,7 @@ To create the new database automatically next time you build the container, add 
 If you want to access the new Moodle instance via a subdomain, copy the `assets/web/apache/lms.moodle.local.conf` file and create the `assets/web/apache/wp.moodle.local.conf` file, replacing all the `lms` occurrences with `wp` inside it.
 
 Then, add the next two lines to `dockerfiler/Dockerfilewebserver` file:
-```
+```dockerfile
 COPY assets/web/apache/wp.moodle.local.conf /etc/apache2/sites-available/wp.moodle.local.conf
 RUN a2ensite wp.moodle.local
 ```
