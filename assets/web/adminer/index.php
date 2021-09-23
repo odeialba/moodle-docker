@@ -11,6 +11,9 @@ function adminer_object() {
     $plugins = [
         // specify enabled plugins here
         new AdminerJsonPreview(),
+        new AdminerResize(),
+        new AdminerSimpleMenu(true, false),
+        new AdminerTableHeaderScroll(),
         new AdminerTablesFilter(),
     ];
     
