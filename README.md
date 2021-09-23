@@ -1,6 +1,4 @@
 # moodle-docker: Docker Containers for Moodle Developers
-[![Build Status](https://github.com/odeialba/moodle-docker/workflows/moodle-docker%20CI/badge.svg?branch=wp)](https://github.com/odeialba/moodle-docker/actions/workflows/ci.yml?query=branch%3Awp)
-
 This repository contains Docker configuration aimed at Moodle developers and testers to easily deploy a testing environment for Moodle.
 
 This repository more specifically is adapted to run multimple instances of Moodle. Each of them will be placed in a directory under the main `MOODLE_DOCKER_WWWROOT` directory, named with the subdomain name that later will be used to access it.
