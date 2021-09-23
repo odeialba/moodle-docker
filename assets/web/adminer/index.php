@@ -12,9 +12,9 @@ function adminer_object() {
         // specify enabled plugins here
         new AdminerJsonPreview(),
         new AdminerResize(),
-        new AdminerSimpleMenu(true, false),
         new AdminerTableHeaderScroll(),
         new AdminerTablesFilter(),
+        new AdminerSimpleMenu(true, false),
     ];
     
     return new AdminerPlugin($plugins);
