@@ -43,7 +43,7 @@ bin/moodle-docker-compose up -d
 bin/moodle-docker-wait-for-db
 
 # Install DB for the lms instance
-bin/moodle-docker-bash webserver minstall moodle -d lms
+bin/mbash minstall moodle -d lms
 # Note: See "Custom commands" section for more info
 
 # Work with the containers (see below)
@@ -81,26 +81,37 @@ bin/moodle-docker-compose start
 ## Custom commands
 
 ### moodle-docker-bash
-This script was created to easily run any command inside any container. First parameter will be the container name and second one will be the command (wrap it within single quotes). Example:
+This script was created to easily run any command inside any container. First parameter will be the container name and second one will be the command. Example:
 ```bash
-~$ bin/moodle-docker-bash webserver 'pwd'
-/var/www/html
+~$ bin/moodle-docker-bash webserver php -v
+PHP 7.4.23 (cli) (built: Sep  3 2021 18:14:02) ( NTS )
+```
+```bash
+~$ bin/moodle-docker-bash db psql --version
+psql (PostgreSQL) 11.13 (Debian 11.13-1.pgdg90+1)
+```
+
+### mbash
+As most of the commands using the `moodle-docker-bash` script will be run on the `webserver` container, this is a shortcut of that script that runs the commands only in the `webserver` container. Example:
+```bash
+~$ bin/mbash php -v
+PHP 7.4.23 (cli) (built: Sep  3 2021 18:14:02) ( NTS )
 ```
 
 ### minstall
 This script was created to be automatically installed in the webserver container and to easily run any install command. First parameter will be the database to install (moodle, phpunit or behat), the second one (`-d`) the subdirectory of the Moodle instance and the rest will be all the parameters that want to be used to override the default one. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Examples:
 ```bash
-~$ bin/moodle-docker-bash webserver minstall moodle -d lms --fullname="Moodle first instance" --adminpass="admin"
+~$ bin/mbash minstall moodle -d lms --fullname="Moodle first instance" --adminpass="admin"
 -------------------------------------------------------------------------------
 == Setting up database ==
 -->System
 ```
 ```bash
-~$ bin/moodle-docker-bash webserver minstall phpunit -d lms
+~$ bin/mbash minstall phpunit -d lms
 Initialising Moodle PHPUnit test environment...
 ```
 ```bash
-~$ bin/moodle-docker-bash webserver minstall behat -d lms
+~$ bin/mbash minstall behat -d lms
 You are already using the latest available Composer version 2.1.8 (stable channel).
 Installing dependencies from lock file (including require-dev)
 ```
@@ -108,24 +119,24 @@ Installing dependencies from lock file (including require-dev)
 ### mtest
 This script was created to be automatically installed in the webserver container and to easily run any test command. First parameter will be the tests to be run (phpunit or behat), the second one (`-d`) the subdirectory of the Moodle instance and the rest will be all the parameters that want to be used to override the default ones. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Examples:
 ```bash
-~$ bin/moodle-docker-bash webserver mtest phpunit -d lms --filter auth_manual_testcase
+~$ bin/mbash mtest phpunit -d lms --filter auth_manual_testcase
 Moodle 3.11.3 (Build: 20210913), 8c02bd32af238dfc83727fb4260b9caf1b622fdb
 Php: 7.4.23, pgsql: 11.13 (Debian 11.13-1.pgdg90+1), OS: Linux 5.10.47-linuxkit x86_64
 ```
 ```bash
-~$ bin/moodle-docker-bash webserver mtest behat -d lms --tags=@auth_manual
+~$ bin/mbash mtest behat -d lms --tags=@auth_manual
 Running single behat site:
 ```
 
 ### mutil
 This script was created to be automatically installed in the webserver container and to easily access the `util.php` files of phpunit and behat. First parameter will be the test environment (phpunit or behat), the second one (`-d`) the subdirectory of the Moodle instance and the rest will be all the parameters that want to be used to override the default ones. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Examples:
 ```bash
-~$ bin/moodle-docker-bash webserver mutil phpunit -d lms --drop
+~$ bin/mbash mutil phpunit -d lms --drop
 Purging dataroot:
 Dropping tables:
 ```
 ```bash
-~$ bin/moodle-docker-bash webserver mutil behat -d lms --drop
+~$ bin/mbash mutil behat -d lms --drop
 Dropping tables:
 ```
 
@@ -133,12 +144,12 @@ Dropping tables:
 
 ```bash
 # Initialize behat environment
-~$ bin/moodle-docker-bash webserver minstall behat -d lms
+~$ bin/mbash minstall behat -d lms
 # Note: See "Custom commands" section for more info
 # [..]
 
 # Run behat tests
-~$ bin/moodle-docker-bash webserver mtest behat -d lms --tags=@auth_manual
+~$ bin/mbash mtest behat -d lms --tags=@auth_manual
 # Note: See "Custom commands" section for more info
 Running single behat site:
 Moodle 3.4dev (Build: 20171006), 33a3ec7c9378e64c6f15c688a3c68a39114aa29d
@@ -153,18 +164,18 @@ Started at 25-05-2017, 19:04
 ```
 
 Notes:
-* The behat faildump directory is exposed at http://localhost:8000/_/faildumps/.
+* The behat faildump directory is exposed at http://moodle.local/_/faildumps/.
 
 ## Use containers for running phpunit tests
 
 ```bash
 # Initialize phpunit environment
-~$ bin/moodle-docker-bash webserver minstall phpunit -d lms
+~$ bin/mbash minstall phpunit -d lms
 # Note: See "Custom commands" section for more info
 # [..]
 
 # Run phpunit tests
-~$ bin/moodle-docker-bash webserver mtest phpunit -d lms auth_manual_testcase auth/manual/tests/manual_test.php
+~$ bin/mbash mtest phpunit -d lms auth_manual_testcase auth/manual/tests/manual_test.php
 # Note: See "Custom commands" section for more info
 Moodle 3.4dev (Build: 20171006), 33a3ec7c9378e64c6f15c688a3c68a39114aa29d
 Php: 7.1.9, pgsql: 9.6.5, OS: Linux 4.9.49-moby x86_64
@@ -183,7 +194,7 @@ Notes:
 
 ```bash
 # Initialize Moodle database for manual testing
-bin/moodle-docker-bash webserver minstall moodle -d lms
+bin/mbash minstall moodle -d lms
 ```
 
 Notes:
@@ -241,7 +252,7 @@ By now the new instance will be accessible from http://moodle.local/wp, but as t
 
 Create the directories copying the one from the main instance and change the owner:
 ```bash
-bin/moodle-docker-bash webserver 'cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp'
+bin/mbash 'cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp'
 ```
 
 To have it automatically done next time you build the container, add the next line to the `dockerfiler/Dockerfilewebserver` file:
@@ -265,7 +276,44 @@ COPY assets/web/apache/wp.moodle.local.conf /etc/apache2/sites-available/wp.mood
 RUN a2ensite wp.moodle.local
 ```
 
-Now, if you destroy all your containers and it's images, and run `bin/moodle-docker-compose up -d`, all the new containers will be created correctly. And if you access http://wp.moodle.local/, you should see your new Moodle instance (run `bin/moodle-docker-bash webserver minstall moodle -d wp` to easily install the database).
+Now, if you destroy all your containers and it's images, and run `bin/moodle-docker-compose up -d`, all the new containers will be created correctly. And if you access http://wp.moodle.local/, you should see your new Moodle instance (run `bin/mbash minstall moodle -d wp` to easily install the database).
+
+## Change PHP version
+
+By default this containers will run with PHP 7.3. To change the PHP version, change the environment variable `MOODLE_DOCKER_PHP_VERSION` to the desired version and run compose up again. It might fail the first try because the container with the `webserver` name already exists, but run compose up again and it will work.
+
+Commands:
+```bash
+~$ export MOODLE_DOCKER_PHP_VERSION=7.4
+~$ bin/moodle-docker-compose up -d
+```
+
+Common error:
+```bash
+~$ bin/moodle-docker-compose up -d
+[+] Running 5/5
+ ⠿ Container db                     Started                    2.3s
+ ⠿ Container selenium               Started                    7.2s
+ ⠿ Container mailhog                Started                    2.1s
+ ⠿ Container exttests               Started                    4.2s
+ ⠿ Container webserver              Started                    5.6s
+~$ export MOODLE_DOCKER_PHP_VERSION=7.4
+~$ bin/moodle-docker-compose up -d
+[+] Running 5/5
+ ⠿ Container selenium               Running                    0.0s
+ ⠿ Container db                     Running                    0.0s
+ ⠿ Container mailhog                Running                    0.0s
+ ⠿ Container exttests               Running                    0.0s
+ ⠿ Container webserver              Recreated                  5.8s
+Error response from daemon: Renaming a container with the same name as its current name
+~$ bin/moodle-docker-compose up -d
+[+] Running 5/5
+ ⠿ Container selenium               Running                    0.0s
+ ⠿ Container db                     Running                    0.0s
+ ⠿ Container mailhog                Running                    0.0s
+ ⠿ Container exttests               Running                    0.0s
+ ⠿ Container webserver              Started                    0.8s
+```
 
 ## Use containers for running behat tests for the Moodle App
 
