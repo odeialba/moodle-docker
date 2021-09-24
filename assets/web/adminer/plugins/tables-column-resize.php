@@ -65,7 +65,7 @@ class AdminerResize
 		</script>
 
 		<style type="text/css">
-			[data-resize] { display: block; position: absolute; top: 40px; left: 250px; width: 2px; min-height: 100%; background-color: #65ADC3; cursor: col-resize; }
+			[data-resize] { display: block; position: absolute; left: 250px; width: 2px; min-height: 100%; background-color: #65ADC3; cursor: col-resize; }
 		</style>
 		<?php
 	}
