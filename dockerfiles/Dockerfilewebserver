@@ -56,3 +56,6 @@ COPY assets/web/commands/mutil /usr/local/bin/mutil
 RUN chmod +x /usr/local/bin/mutil
 COPY assets/web/commands/mcommon /usr/local/bin/mcommon
 RUN chmod +x /usr/local/bin/mcommon
+COPY assets/web/commands/mfixversion /usr/local/bin/mfixversion
+RUN chmod +x /usr/local/bin/mfixversion
+COPY assets/web/scripts /var/www/scripts

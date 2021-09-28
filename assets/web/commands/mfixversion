@@ -1,0 +1,18 @@
+dir='.'
+for (( i=1; i<=$#; i++)); do
+    case "${!i}" in
+        --dir|-d)
+            j=$((i+1))
+            dir="${!j}"
+            i=j
+            ;;
+        *)
+            SCRIPT_NAME=`basename "$0"`
+            echo "Usage: $SCRIPT_NAME [-d subdirectory]"
+            exit 1
+    esac
+done
+
+eval "cp ../scripts/fixversions.php ${dir}/fixversions.php"
+eval "php ${dir}/fixversions.php"
+eval "rm ${dir}/fixversions.php"
