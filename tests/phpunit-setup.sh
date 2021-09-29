@@ -6,11 +6,11 @@ export MOODLE_DOCKER_WWWROOT="${basedir}/moodle/lms"
 
 if [ "$SUITE" = "phpunit" ];
 then
-    initcmd="bin/moodle-docker-compose exec -T webserver bash -c 'cd lms && php admin/tool/phpunit/cli/init.php'"
+    initcmd="bin/moodle-docker-compose exec -T webserver bash -c cd lms && php admin/tool/phpunit/cli/init.php"
 elif [ "$SUITE" = "phpunit-full" ];
 then
     export MOODLE_DOCKER_PHPUNIT_EXTERNAL_SERVICES=true
-    initcmd="bin/moodle-docker-compose exec -T webserver bash -c 'cd lms && php admin/tool/phpunit/cli/init.php'"
+    initcmd="bin/moodle-docker-compose exec -T webserver bash -c cd lms && php admin/tool/phpunit/cli/init.php"
 else
     echo "Error, unknown suite '$SUITE'"
     exit 1
