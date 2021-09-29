@@ -13,12 +13,6 @@ then
     exit 1
 fi
 
-if [ -z "$MOODLE_DOCKER_DB_WP" ];
-then
-    echo 'Error: $MOODLE_DOCKER_DB_WP is not set'
-    exit 1
-fi
-
 # Nasty portable way to the directory of this script, following symlink,
 # because readlink -f not on OSX. Thanks stack overflow..
 SOURCE="${BASH_SOURCE[0]}"
