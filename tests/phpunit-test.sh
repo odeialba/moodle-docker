@@ -7,10 +7,10 @@ export MOODLE_DOCKER_WWWROOT="${basedir}/moodle/lms"
 
 if [ "$SUITE" = "phpunit" ];
 then
-    testcmd="bin/moodle-docker-compose exec -T webserver lms/vendor/bin/phpunit --filter core_dml_testcase"
+    testcmd="bin/mbash mtest phpunit -d lms --filter core_dml_testcase"
 elif [ "$SUITE" = "phpunit-full" ];
 then
-    testcmd="bin/moodle-docker-compose exec -T webserver lms/vendor/bin/phpunit --verbose"
+    testcmd="bin/mbash mtest phpunit -d lms --verbose"
 else
     echo "Error, unknown suite '$SUITE'"
     exit 1

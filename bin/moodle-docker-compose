@@ -150,6 +150,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
     #dockercompose="${dockercompose} -f ${basedir}/volumes-cached.yml"
     # https://vivait.co.uk/labs/docker-for-mac-performance-using-nfs
     dockercompose="${dockercompose} -f ${basedir}/volumes-nfs.yml"
+    # dockercompose="${dockercompose} -f ${basedir}/volumes-sync.yml"
 fi
 
 

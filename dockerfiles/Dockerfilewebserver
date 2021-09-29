@@ -30,7 +30,7 @@ RUN a2ensite adminer.moodle.local
 
 # Install essentials
 RUN apt-get update
-RUN apt-get install -my mc nano tree gnupg curl libtool libssl-dev m4 automake autoconf build-essential pkg-config
+RUN apt-get install -my mc nano tree gnupg curl libtool libssl-dev m4
 
 # Runkit7
 RUN pecl install -f runkit7

@@ -7,7 +7,7 @@ export MOODLE_DOCKER_WWWROOT="${basedir}/moodle/lms"
 
 if [ "$SUITE" = "behat" ];
 then
-    testcmd="bin/moodle-docker-compose exec -T webserver php lms/admin/tool/behat/cli/run.php --tags=@auth_manual"
+    testcmd="bin/mbash mtest behat -d lms --tags=@auth_manual"
 else
     echo "Error, unknown suite '$SUITE'"
     exit 1
