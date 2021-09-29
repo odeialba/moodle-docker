@@ -6,7 +6,7 @@ export MOODLE_DOCKER_WWWROOT="${basedir}/moodle/lms"
 
 if [ "$SUITE" = "behat" ];
 then
-    initcmd="bin/moodle-docker-compose exec -T webserver minstall behat -d lms"
+    initcmd="bin/moodle-docker-compose exec -T webserver cd lms && php admin/tool/behat/cli/init.php"
 else
     echo "Error, unknown suite '$SUITE'"
     exit 1
