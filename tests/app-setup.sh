@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
-initcmd="bin/moodle-docker-compose exec -T webserver cd lms && php admin/tool/behat/cli/init.php"
+initcmd="bin/moodle-docker-compose exec -T webserver bash -c 'cd lms && php admin/tool/behat/cli/init.php'"
 
 export MOODLE_DOCKER_WWWROOT="${basedir}/moodle/lms"
 export MOODLE_DOCKER_BROWSER="chrome"
