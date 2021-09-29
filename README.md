@@ -140,6 +140,14 @@ Dropping tables:
 Dropping tables:
 ```
 
+### mfixversion
+After increasing the version number in a branch, going back to the master branch might cause version problems. This script was created to easily solve that issue. The first parameter (`-d`) will be the subdirectory of the Moodle instance. If this parameter is not provided, the main directory will be used as the Moodle instance directory. Note that this script needs to be run either withing the container shell or using `moodle-docker-bash`. Example:
+```bash
+~$ bin/mbash mfixversion -d lms
+-------------------------------------------------------------------------------
+== Resetting all version numbers ==
+```
+
 ## Use containers for running behat tests
 
 ```bash
