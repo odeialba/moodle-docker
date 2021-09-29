@@ -1,0 +1,19 @@
+# Here we support https://github.com/moodlehq/moodle-docker/issues/187
+# for improved performance on mac
+version: "2"
+services:
+  webserver:
+    volumes:
+      - "/var/www/html"
+  bg-sync:
+    image: "cweagans/bg-sync"
+    container_name: "bg-sync"
+    volumes:
+      - "${MOODLE_DOCKER_WWWROOT}:/source"
+    volumes_from:
+      - "webserver"
+    environment:
+      SYNC_DESTINATION: "/var/www/html"
+      SYNC_MAX_INOTIFY_WATCHES: "40000"
+      SYNC_VERBOSE: 1
+    privileged: true
