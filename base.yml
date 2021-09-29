@@ -6,6 +6,7 @@ services:
     depends_on:
       - db
     build:
+      context: "."
       dockerfile: "./dockerfiles/Dockerfilewebserver"
       args:
         MOODLE_DOCKER_PHP_VERSION: "${MOODLE_DOCKER_PHP_VERSION}"
