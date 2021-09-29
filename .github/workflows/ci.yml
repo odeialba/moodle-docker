@@ -46,12 +46,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: moodle/moodle
-          path: moodle
+          path: moodle/lms
           ref: ${{ matrix.branch }}
 
       - name: Prepare moodle-docker environment
         run: |
-          cp config.docker-template.php moodle/config.php
+          cp config.docker-template.php moodle/lms/config.php
           export MOODLE_DOCKER_DB="${{ matrix.database }}"
           export MOODLE_DOCKER_PHP_VERSION="${{ matrix.php }}"
           export SUITE="${{ matrix.suite }}"
@@ -112,12 +112,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: moodle/moodle
-          path: moodle
+          path: moodle/lms
           ref: ${{ matrix.branch }}
 
       - name: Prepare moodle-docker environment
         run: |
-          cp config.docker-template.php moodle/config.php
+          cp config.docker-template.php moodle/lms/config.php
           export MOODLE_DOCKER_DB="${{ matrix.database }}"
           export MOODLE_DOCKER_PHP_VERSION="${{ matrix.php }}"
           export SUITE="${{ matrix.suite }}"
@@ -162,12 +162,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: moodle/moodle
-          path: moodle
+          path: moodle/lms
           ref: ${{ matrix.branch }}
 
       - name: Prepare moodle-docker environment
         run: |
-          cp config.docker-template.php moodle/config.php
+          cp config.docker-template.php moodle/lms/config.php
           export MOODLE_DOCKER_DB="${{ matrix.database }}"
           export MOODLE_DOCKER_PHP_VERSION="${{ matrix.php }}"
           export SUITE="${{ matrix.suite }}"
