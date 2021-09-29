@@ -2,7 +2,7 @@
 set -e
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 
-export MOODLE_DOCKER_WWWROOT="${basedir}/moodle"
+export MOODLE_DOCKER_WWWROOT="${basedir}/moodle/lms"
 export MOODLE_DOCKER_BROWSER="chrome"
 
 if [ "$SUITE" = "app-development" ];

@@ -2,11 +2,11 @@
 set -e
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 
-export MOODLE_DOCKER_WWWROOT="${basedir}/moodle"
+export MOODLE_DOCKER_WWWROOT="${basedir}/moodle/lms"
 
 if [ "$SUITE" = "behat" ];
 then
-    initcmd="bin/moodle-docker-compose exec -T webserver php admin/tool/behat/cli/init.php"
+    initcmd="bin/moodle-docker-compose exec -T webserver php lms/admin/tool/behat/cli/init.php"
 else
     echo "Error, unknown suite '$SUITE'"
     exit 1
