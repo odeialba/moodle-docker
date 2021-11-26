@@ -7,7 +7,7 @@ services:
       - "/var/www/html"
   bg-sync:
     image: "cweagans/bg-sync"
-    container_name: "bg-sync"
+    container_name: "bg-sync-beta"
     volumes:
       - "${MOODLE_DOCKER_WWWROOT}:/source"
     volumes_from:

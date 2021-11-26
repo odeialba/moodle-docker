@@ -1,11 +1,15 @@
 version: "2"
 services:
   webserver:
+    depends_on:
+      - db-mssql
     environment:
+      MOODLE_DOCKER_DBHOST: "db-mssql"
       MOODLE_DOCKER_DBTYPE: sqlsrv
       MOODLE_DOCKER_DBUSER: sa
-  db:
+  db-mssql:
     image: moodlehq/moodle-db-mssql
+    container_name: "db-mssql-beta"
     environment:
         ACCEPT_EULA: "y"
         SA_PASSWORD: "m@0dl3ing"

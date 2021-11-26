@@ -7,6 +7,6 @@ services:
       - mailhog
   mailhog:
     image: "mailhog/mailhog"
-    container_name: "mailhog"
+    container_name: "mailhog-beta"
     ports:
       - "8025:8025"

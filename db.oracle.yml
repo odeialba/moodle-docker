@@ -1,8 +1,12 @@
 version: "2"
 services:
   webserver:
+    depends_on:
+      - db-oracle
     environment:
+      MOODLE_DOCKER_DBHOST: "db-oracle"
       MOODLE_DOCKER_DBTYPE: oci
       MOODLE_DOCKER_DBNAME: XE
-  db:
+  db-oracle:
     image: moodlehq/moodle-db-oracle-r2
+    container_name: "db-oracle-beta"
