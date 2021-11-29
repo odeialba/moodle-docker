@@ -256,24 +256,7 @@ cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/wp/config.php
 
 Change the value of the `$type` variable to `wp`.
 
-By now the new instance will be accessible from http://moodle.local/wp, but as the necessary `dataroot` directories are not created yet, we will get an error.
-
-Create the directories copying the one from the main instance and change the owner:
-```bash
-bin/mbash 'cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp'
-```
-
-To have it automatically done next time you build the container, add the next line to the `dockerfiler/Dockerfilewebserver` file:
-```dockerfile
-RUN cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp
-```
-
-By now the new instance will be accessible from http://moodle.local/wp.
-
-### Database [Optional]
-The new Moodle instance will be using the same database as the original instance with a different database prefix, so everything will work fine. But if you want to create a new database for the new instance, continue reading.
-
-To create the new database automatically next time you build the container, add the new database name to the `POSTGRES_MULTIPLE_DATABASES` (comma separated values) environment variable of the `db` container in `base.yml` file. Then, add a new environment variable to the `webserver` container and call it `MOODLE_DOCKER_DBNAME_WP` and give it the value of the name of the new database.
+By now the new instance will be accessible from http://moodle.local/wp, and the necessary `dataroot` directories will be automatically created the first time we access it.
 
 ### Subdomain [Optional]
 If you want to access the new Moodle instance via a subdomain, copy the `assets/web/apache/lms.moodle.local.conf` file and create the `assets/web/apache/wp.moodle.local.conf` file, replacing all the `lms` occurrences with `wp` inside it.
@@ -286,40 +269,60 @@ RUN a2ensite wp.moodle.local
 
 Now, if you destroy all your containers and it's images, and run `bin/moodle-docker-compose up -d`, all the new containers will be created correctly. And if you access http://wp.moodle.local/, you should see your new Moodle instance (run `bin/mbash minstall moodle -d wp` to easily install the database).
 
+### Database [Optional]
+The new Moodle instance will be using the same database as the original instance with a different database prefix, so everything will work fine. But if you want to create a new database for the new instance, continue reading.
+
+To create the new database automatically next time you build the container, add the new database name to the `POSTGRES_MULTIPLE_DATABASES` (comma separated values) environment variable of the `db` container in `base.yml` file. Then, add a new environment variable to the `webserver` container and call it `MOODLE_DOCKER_DBNAME_WP` and give it the value of the name of the new database.
+
 ## Change PHP version
 
-By default this containers will run with PHP 7.3. To change the PHP version, change the environment variable `MOODLE_DOCKER_PHP_VERSION` to the desired version and run compose up again. It might fail the first try because the container with the `webserver` name already exists, but run compose up again and it will work.
+By default this containers will run with PHP 7.4. You can change the PHP version in two ways. One will be only until the container stops and the other one until the terminal is closed (it can be changed to permanent).
+
+### Temporaly / Short period
+To temporaly change the PHP version, run the `bin/moodle-docker-compose up` command defining the desired PHP version:
+
+```bash
+~$ bin/moodle-docker-compose up -d
+[+] Running 5/5
+...
+ ⠿ Starting webserver ... done
+~$ bin/mbash php -v
+PHP 7.4.26 (cli) (built: Nov 18 2021 16:17:36) ( NTS )
+~$ bin/moodle-docker-compose stop
+...
+~$ bin/moodle-docker-compose up -d php73
+[+] Running 5/5
+...
+ ⠿ Recreating webserver ... done
+~$ bin/mbash php -v
+PHP 7.3.33 (cli) (built: Nov 18 2021 18:28:06) ( NTS )
+```
+
+### Permanently / Long period
+To change the PHP version, create an environment variable `MOODLE_DOCKER_PHP_VERSION`, give it the value of the desired PHP version and run compose up again. It might fail the first try because the container with the `webserver` name already exists, but run compose up again and it will work.
 
 Commands:
 ```bash
-~$ export MOODLE_DOCKER_PHP_VERSION=7.4
+~$ export MOODLE_DOCKER_PHP_VERSION=7.3
 ~$ bin/moodle-docker-compose up -d
 ```
+Note: This change will only work until the current terminal is closed. To make it permanent, add the line (`export MOODLE_DOCKER_PHP_VERSION=7.3`) to `~/.bash_profile`.
 
 Common error:
 ```bash
 ~$ bin/moodle-docker-compose up -d
 [+] Running 5/5
- ⠿ Container db                     Started                    2.3s
- ⠿ Container selenium               Started                    7.2s
- ⠿ Container mailhog                Started                    2.1s
- ⠿ Container exttests               Started                    4.2s
+...
  ⠿ Container webserver              Started                    5.6s
-~$ export MOODLE_DOCKER_PHP_VERSION=7.4
+~$ export MOODLE_DOCKER_PHP_VERSION=7.3
 ~$ bin/moodle-docker-compose up -d
 [+] Running 5/5
- ⠿ Container selenium               Running                    0.0s
- ⠿ Container db                     Running                    0.0s
- ⠿ Container mailhog                Running                    0.0s
- ⠿ Container exttests               Running                    0.0s
+...
  ⠿ Container webserver              Recreated                  5.8s
 Error response from daemon: Renaming a container with the same name as its current name
 ~$ bin/moodle-docker-compose up -d
 [+] Running 5/5
- ⠿ Container selenium               Running                    0.0s
- ⠿ Container db                     Running                    0.0s
- ⠿ Container mailhog                Running                    0.0s
- ⠿ Container exttests               Running                    0.0s
+...
  ⠿ Container webserver              Started                    0.8s
 ```
 
