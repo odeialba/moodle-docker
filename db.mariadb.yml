@@ -1,11 +1,15 @@
 version: "2"
 services:
   webserver:
+    depends_on:
+      - db-mariadb
     environment:
+      MOODLE_DOCKER_DBHOST: "db-mariadb"
       MOODLE_DOCKER_DBTYPE: mariadb
       MOODLE_DOCKER_DBCOLLATION: utf8mb4_bin
-  db:
+  db-mariadb:
     image: mariadb:10.5
+    container_name: "db-mariadb"
     command: >
               --character-set-server=utf8mb4
               --collation-server=utf8mb4_bin

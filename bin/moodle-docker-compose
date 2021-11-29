@@ -7,11 +7,69 @@ then
     exit 1
 fi
 
-if [ -z "$MOODLE_DOCKER_DB" ];
-then
-    echo 'Error: $MOODLE_DOCKER_DB is not set'
-    exit 1
+# Set default environment variables
+# PHP Version.
+export MOODLE_DOCKER_PHP_VERSION=${MOODLE_DOCKER_PHP_VERSION:-7.4}
+# Database.
+export MOODLE_DOCKER_DB=${MOODLE_DOCKER_DB:-pgsql}
+# Webserver host (don't forget to add this to /etc/hosts)
+export MOODLE_DOCKER_WEB_HOST=${MOODLE_DOCKER_WEB_HOST:-moodle.local}
+# Webserver port
+export MOODLE_DOCKER_WEB_PORT=${MOODLE_DOCKER_WEB_PORT:-80}
+# Selenium port for VNC (to be able to see behat tests in action)
+export MOODLE_DOCKER_SELENIUM_VNC_PORT=${MOODLE_DOCKER_SELENIUM_VNC_PORT:-54321}
+
+ymlfiles=(base service.mail)
+containsdb=true
+
+# DB type
+cleanparams=()
+for var in "$@"; do
+    case "$var" in
+        pgsql|mysql|oracle|mariadb|mssql)
+            export MOODLE_DOCKER_DB=$var
+            ;;
+        php81|php.81|php8.1|php.8.1)
+            export MOODLE_DOCKER_PHP_VERSION=8.1
+            ;;
+        php8|php80|php.80|php8.0|php.8.0)
+            export MOODLE_DOCKER_PHP_VERSION=8.0
+            ;;
+        php70|php.74|php7.4|php.7.4)
+            export MOODLE_DOCKER_PHP_VERSION=7.4
+            ;;
+        php73|php.73|php7.3|php.7.3)
+            export MOODLE_DOCKER_PHP_VERSION=7.3
+            ;;
+        php72|php.72|php7.2|php.7.2)
+            export MOODLE_DOCKER_PHP_VERSION=7.2
+            ;;
+        php71|php.71|php7.1|php.7.1)
+            export MOODLE_DOCKER_PHP_VERSION=7.1
+            ;;
+        php7|php70|php.70|php7.0|php.7.0)
+            export MOODLE_DOCKER_PHP_VERSION=7.0
+            ;;
+        stop)
+            ymlfiles+=(db.pgsql db.mysql db.oracle db.mariadb db.mssql)
+
+            cleanparams+=("$var")
+            containsdb=false
+            ;;
+        *)
+            cleanparams+=("$var")
+            ;;
+    esac
+done
+set -- "${cleanparams[@]}"
+
+if [ "$containsdb" = true ] ; then
+    # Database flavour
+    ymlfiles+=("db.${MOODLE_DOCKER_DB}")
 fi
+
+# Hide orphans warning
+export COMPOSE_IGNORE_ORPHANS=True
 
 # Nasty portable way to the directory of this script, following symlink,
 # because readlink -f not on OSX. Thanks stack overflow..
@@ -23,26 +81,6 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 basedir="$( cd -P "$( dirname "$SOURCE" )/../" && pwd )"
 export ASSETDIR="${basedir}/assets"
-
-
-dockercompose="docker-compose -f ${basedir}/base.yml"
-dockercompose="${dockercompose} -f ${basedir}/service.mail.yml"
-
-# PHP Version.
-export MOODLE_DOCKER_PHP_VERSION=${MOODLE_DOCKER_PHP_VERSION:-7.3}
-
-# Database flavour
-if [ "$MOODLE_DOCKER_DB" != 'pgsql' ];
-then
-    dockercompose="${dockercompose} -f ${basedir}/db.${MOODLE_DOCKER_DB}.yml"
-
-fi
-
-# Support PHP version overrides for DB..
-filename="${basedir}/db.${MOODLE_DOCKER_DB}.${MOODLE_DOCKER_PHP_VERSION}.yml"
-if [ -f $filename ]; then
-    dockercompose="${dockercompose} -f ${filename}"
-fi
 
 # Fix mobile app deprecated variables
 if [ ! -z "$MOODLE_APP_VERSION" ];
@@ -95,18 +133,18 @@ fi
 # Mobile app for development
 if [[ ! -z "$MOODLE_DOCKER_BROWSER" ]] && [[ "$MOODLE_DOCKER_BROWSER" == "chrome" ]] && [[ ! -z "$MOODLE_DOCKER_APP_PATH" ]];
 then
-    dockercompose="${dockercompose} -f ${basedir}/moodle-app-dev-$MOODLE_DOCKER_APP_RUNTIME.yml"
+    ymlfiles+=("moodle-app-dev-${MOODLE_DOCKER_APP_RUNTIME}")
 
 # Mobile app using a docker image
 elif [[ ! -z "$MOODLE_DOCKER_BROWSER" ]] && [[ "$MOODLE_DOCKER_BROWSER" == "chrome" ]] && [[ ! -z "$MOODLE_DOCKER_APP_VERSION" ]];
 then
-    dockercompose="${dockercompose} -f ${basedir}/moodle-app-$MOODLE_DOCKER_APP_RUNTIME.yml"
+    ymlfiles+=("moodle-app-${MOODLE_DOCKER_APP_RUNTIME}")
 fi
 
 # Selenium browser
 if [[ ! -z "$MOODLE_DOCKER_BROWSER" ]] && [[ "$MOODLE_DOCKER_BROWSER" != "firefox" ]];
 then
-    dockercompose="${dockercompose} -f ${basedir}/selenium.${MOODLE_DOCKER_BROWSER}.yml"
+    ymlfiles+=("selenium.${MOODLE_DOCKER_BROWSER}")
 fi
 
 # Selenium VNC port
@@ -119,13 +157,13 @@ then
     then
         MOODLE_DOCKER_SELENIUM_VNC_PORT=127.0.0.1:$MOODLE_DOCKER_SELENIUM_VNC_PORT
     fi
-    dockercompose="${dockercompose} -f ${basedir}/selenium.debug.yml"
+    ymlfiles+=(selenium.debug)
 fi
 
 # External services
 if [[ ! -z "$MOODLE_DOCKER_PHPUNIT_EXTERNAL_SERVICES" ]];
 then
-    dockercompose="${dockercompose} -f ${basedir}/phpunit-external-services.yml"
+    ymlfiles+=(phpunit-external-services)
 fi
 
 # Webserver host
@@ -140,18 +178,28 @@ then
     then
         MOODLE_DOCKER_WEB_PORT=127.0.0.1:$MOODLE_DOCKER_WEB_PORT
     fi
-    dockercompose="${dockercompose} -f ${basedir}/webserver.port.yml"
+    ymlfiles+=(webserver.port)
 fi
 
 
 # Mac OS Compatbility
 if [[ "$(uname)" == "Darwin" ]]; then
     # Support https://docs.docker.com/docker-for-mac/osxfs-caching/
-    #dockercompose="${dockercompose} -f ${basedir}/volumes-cached.yml"
+    # ymlfiles+=(volumes-cached)
     # https://vivait.co.uk/labs/docker-for-mac-performance-using-nfs
-    dockercompose="${dockercompose} -f ${basedir}/volumes-nfs.yml"
-    # dockercompose="${dockercompose} -f ${basedir}/volumes-sync.yml"
+    ymlfiles+=(volumes-nfs)
+    # ymlfiles+=(volumes-sync)
 fi
 
+dockercompose="docker-compose"
+
+for filename in ${ymlfiles[@]}
+do
+    fullfile="${basedir}/${filename}.yml"
+    if [ -f "${fullfile}" ]
+    then
+        dockercompose="${dockercompose} -f ${fullfile}"
+    fi
+done
 
 $dockercompose "$@"

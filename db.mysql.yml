@@ -1,11 +1,15 @@
 version: "2"
 services:
   webserver:
+    depends_on:
+      - db-mysql
     environment:
+      MOODLE_DOCKER_DBHOST: "db-mysql"
       MOODLE_DOCKER_DBTYPE: mysqli
       MOODLE_DOCKER_DBCOLLATION: utf8mb4_bin
-  db:
+  db-mysql:
     image: mysql:5
+    container_name: "db-mysql"
     command: >
                 --character-set-server=utf8mb4
                 --collation-server=utf8mb4_bin
@@ -17,3 +21,5 @@ services:
       MYSQL_USER: moodle
       MYSQL_PASSWORD: "m@0dl3ing"
       MYSQL_DATABASE: moodle
+    ports:
+      - "3306:3306"

@@ -7,15 +7,9 @@ RUN rm -rf /var/www/moodledata && \
     rm -rf /var/www/behatdata
 
 # Create new moodledata directories
-# LMS
-RUN mkdir /var/www/lms && \
-	mkdir /var/www/lms/moodledata /var/www/lms/behatdata /var/www/lms/phpunitdata && \
-	mkdir /var/www/lms/moodledata/400 /var/www/lms/moodledata/311 /var/www/lms/moodledata/310 && \
-	mkdir /var/www/lms/behatdata/400 /var/www/lms/behatdata/311 /var/www/lms/behatdata/310 && \
-	mkdir /var/www/lms/phpunitdata/400 /var/www/lms/phpunitdata/311 /var/www/lms/phpunitdata/310 && \
-	chown -R www-data /var/www/lms
-# WP
-RUN cp -r /var/www/lms /var/www/wp && chown -R www-data /var/www/wp
+RUN mkdir /var/www/data && \
+	chown -R www-data:www-data /var/www/data && \
+	chmod -R g+rw /var/www/data
 
 # Subdomains
 COPY assets/web/apache/lms.moodle.local.conf /etc/apache2/sites-available/lms.moodle.local.conf
@@ -42,7 +36,7 @@ COPY assets/web/php/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.i
 
 # nvm
 ENV NVM_DIR /root/.nvm
-ENV NODE_VERSION 14.15.0
+ENV NODE_VERSION 14.18.0
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 RUN bash -c ". /root/.nvm/nvm.sh --install && nvm alias default $NODE_VERSION && nvm use default"
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
