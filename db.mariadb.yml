@@ -9,7 +9,7 @@ services:
       MOODLE_DOCKER_DBCOLLATION: utf8mb4_bin
   db-mariadb:
     image: mariadb:10.5
-    container_name: "db-mariadb-beta"
+    container_name: "db-mariadb"
     command: >
               --character-set-server=utf8mb4
               --collation-server=utf8mb4_bin

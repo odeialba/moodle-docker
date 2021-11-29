@@ -11,7 +11,7 @@ services:
       MOODLE_DOCKER_DBNAME_PHPUNIT: phpunit
       MOODLE_DOCKER_DBNAME_BEHAT: behat
   db-pg:
-    container_name: "db-pg-beta"
+    container_name: "db-pg"
     image: "postgres:11"
     volumes:
       - "./scripts/db/postgresql:/docker-entrypoint-initdb.d"

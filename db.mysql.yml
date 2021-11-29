@@ -9,7 +9,7 @@ services:
       MOODLE_DOCKER_DBCOLLATION: utf8mb4_bin
   db-mysql:
     image: mysql:5
-    container_name: "db-mysql-beta"
+    container_name: "db-mysql"
     command: >
                 --character-set-server=utf8mb4
                 --collation-server=utf8mb4_bin

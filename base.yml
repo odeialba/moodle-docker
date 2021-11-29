@@ -2,7 +2,7 @@ version: "2"
 services:
   webserver:
     image: "moodlehq/moodle-php-apache:${MOODLE_DOCKER_PHP_VERSION}"
-    container_name: "webserver-beta"
+    container_name: "webserver"
     build:
       context: "."
       dockerfile: "./dockerfiles/Dockerfilewebserver"
@@ -21,12 +21,12 @@ services:
       MOODLE_DOCKER_WEB_PORT: "${MOODLE_DOCKER_WEB_PORT}"
   exttests:
     image: "moodlehq/moodle-exttests"
-    container_name: "exttests-beta"
+    container_name: "exttests"
     volumes:
       - "${ASSETDIR}/exttests/apache2_ports.conf:/etc/apache2/ports.conf"
       - "${ASSETDIR}/exttests/apache2.conf:/etc/apache2/sites-enabled/000-default.conf"
   selenium:
     image: "selenium/standalone-firefox${MOODLE_DOCKER_SELENIUM_SUFFIX}:2.53.1"
-    container_name: "selenium-beta"
+    container_name: "selenium"
     volumes:
       - "${MOODLE_DOCKER_WWWROOT}:/var/www/html:ro"

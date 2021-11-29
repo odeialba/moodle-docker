@@ -9,4 +9,4 @@ services:
       MOODLE_DOCKER_DBNAME: XE
   db-oracle:
     image: moodlehq/moodle-db-oracle-r2
-    container_name: "db-oracle-beta"
+    container_name: "db-oracle"
