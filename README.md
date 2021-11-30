@@ -28,7 +28,7 @@ By default, for the first Moodle instance `lms` directory and subdomain will be 
 export MOODLE_DOCKER_WWWROOT=/path/to/moodle/code
 # Choose a db server. If not defined, pgsql will be used. (Currently supported: pgsql, mariadb, mysql, mssql, oracle)
 export MOODLE_DOCKER_DB=pgsql
-# Set up the main domain for the local Moodle instances
+# Set up the main domain for the local Moodle instances. If not defined, moodle.local will be used.
 export MOODLE_DOCKER_WEB_HOST=moodle.local
 
 # Ensure customized config.php for the Docker containers is in place
@@ -313,10 +313,10 @@ If you want to disable and re-enable XDebug during the lifetime of the webserver
 chmod +x bin/xdebug
 
 # Disable XDebug extension in Apache and restart the webserver container
-bin/xdebug webserver disable
+bin/xdebug disable
 
 # Enable XDebug extension in Apache and restart the webserver container
-bin/xdebug webserver enable
+bin/xdebug enable
 ```
 
 Please take special care of the value of `xdebug.client_host` in `/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini` in the webserver container (`assets/web/php/xdebug.ini` in this repository), which is needed to connect from the container to the host. The given value `host.docker.internal` is a special DNS name for this purpose within Docker for Windows and Docker for Mac. If you are running on another Docker environment, you might want to try the value `localhost` instead or even set the hostname/IP of the host directly.
@@ -327,30 +327,26 @@ This repository will install adminer database administrator by default. To acces
 
 ## Create new Moodle instances
 
-It might look complicated, but if you follow the steps, it is quite simple.
+With just two steps you can have a new instance of Moodle up and running.
 
 ### Base config
-To create more Moodle instances, first you need to decide the name of the directory and subdomain that instance will be placed in (in this example `wp` will be used, as it is already implemented). Create a new directory under `MOODLE_DOCKER_WWWROOT` and call it `wp`. Create the config file for that new instance.
+To create more Moodle instances, first you need to decide the name of the directory and subdomain that instance will be placed in (in this example `wp` will be used). Create a new directory under `MOODLE_DOCKER_WWWROOT` and call it `wp`. Create the config file for that new instance.
 ```bash
 cp config.docker-template.php $MOODLE_DOCKER_WWWROOT/wp/config.php
 ```
 
-Change the value of the `$type` variable to `wp`.
-
 By now the new instance will be accessible from http://moodle.local/wp, and the necessary `dataroot` directories will be automatically created the first time we access it.
 
-### Subdomain [Optional]
-If you want to access the new Moodle instance via a subdomain, copy the `assets/web/apache/lms.moodle.local.conf` file and create the `assets/web/apache/wp.moodle.local.conf` file, replacing all the `lms` occurrences with `wp` inside it.
+### Subdomain
+If you run `bin/moodle-docker-compose up -d`, the configuration for the `wp` subdomain will automatically be created, and if you access http://wp.moodle.local/, you should see your new Moodle instance (run `bin/mbash minstall moodle -d wp` to easily install the database).
 
-Then, add the next two lines to `dockerfiler/Dockerfilewebserver` file:
-```dockerfile
-COPY assets/web/apache/wp.moodle.local.conf /etc/apache2/sites-available/wp.moodle.local.conf
-RUN a2ensite wp.moodle.local
+Note: Do not forget to add the sumbomain to your /etc/hosts:
+```
+127.0.0.1   moodle.local lms.moodle.local adminer.moodle.local wp.moodle.local
+::1         moodle.local lms.moodle.local adminer.moodle.local wp.moodle.local
 ```
 
-Now, if you destroy all your containers and it's images, and run `bin/moodle-docker-compose up -d`, all the new containers will be created correctly. And if you access http://wp.moodle.local/, you should see your new Moodle instance (run `bin/mbash minstall moodle -d wp` to easily install the database).
-
-### Database [Optional]
+### Database [Optional] (Only compatible with PosgreSQL)
 The new Moodle instance will be using the same database as the original instance with a different database prefix, so everything will work fine. But if you want to create a new database for the new instance, continue reading.
 
 To create the new database automatically next time you build the container, add the new database name to the `POSTGRES_MULTIPLE_DATABASES` (comma separated values) environment variable of the `db` container in `base.yml` file. Then, add a new environment variable to the `webserver` container and call it `MOODLE_DOCKER_DBNAME_WP` and give it the value of the name of the new database.

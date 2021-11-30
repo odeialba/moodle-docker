@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+newsites=false
+FOLDERS="/var/www/html/*"
+for f in $FOLDERS
+do
+  if [ -d "$f" ]
+  then
+    folder=$(basename $f)
+    newfile="/etc/apache2/sites-available/${folder}.moodle.local.conf"
+    if [ ! -f "$newfile" ]
+    then
+      newsites=true
+      cp "/etc/apache2/sites-available/template.moodle.local.conf" $newfile
+      filecontents=$(<${newfile})
+      echo "${filecontents//template/${folder}}" > ${newfile}
+      a2ensite ${folder}.moodle.local > /dev/null 2>&1
+      echo "${folder}.moodle.local enabled"
+    fi
+  fi
+done
+
+if [ "$newsites" = true ] ; then
+    service apache2 reload > /dev/null 2>&1
+fi

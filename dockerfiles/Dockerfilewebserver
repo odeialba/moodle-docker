@@ -8,14 +8,10 @@ RUN rm -rf /var/www/moodledata && \
 
 # Create new moodledata directories
 RUN mkdir /var/www/data && \
-	chown -R www-data:www-data /var/www/data && \
-	chmod -R g+rw /var/www/data
+	chown -R www-data /var/www/data
 
 # Subdomains
-COPY assets/web/apache/lms.moodle.local.conf /etc/apache2/sites-available/lms.moodle.local.conf
-RUN a2ensite lms.moodle.local
-COPY assets/web/apache/wp.moodle.local.conf /etc/apache2/sites-available/wp.moodle.local.conf
-RUN a2ensite wp.moodle.local
+COPY assets/web/apache/template.moodle.local.conf /etc/apache2/sites-available/template.moodle.local.conf
 
 # Adminer
 COPY assets/web/adminer /var/www/adminer
@@ -57,4 +53,6 @@ COPY assets/web/commands/mcommon /usr/local/bin/mcommon
 RUN chmod +x /usr/local/bin/mcommon
 COPY assets/web/commands/mfixversion /usr/local/bin/mfixversion
 RUN chmod +x /usr/local/bin/mfixversion
+COPY assets/web/commands/mrefreshsites /usr/local/bin/mrefreshsites
+RUN chmod +x /usr/local/bin/mrefreshsites
 COPY assets/web/scripts /var/www/scripts
