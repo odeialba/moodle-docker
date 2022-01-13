@@ -253,7 +253,10 @@ Started at 25-05-2017, 19:04
 ```
 
 Notes:
+
 * The behat faildump directory is exposed at http://moodle.local/_/faildumps/.
+* Use `MOODLE_DOCKER_BROWSER` to switch the browser you want to run the test against.
+  You need to recreate your containers using `bin/moodle-docker-compose` as described below, if you change it.
 
 ## Use containers for running phpunit tests
 
@@ -399,14 +402,15 @@ You can learn more about writing tests for the app in [Acceptance testing for th
 
 ## Environment variables
 
-You can change the configuration of the docker images by setting various environment variables before calling `bin/moodle-docker-compose up`.
+You can change the configuration of the docker images by setting various environment variables **before** calling `bin/moodle-docker-compose up`.
+When you change them, use `bin/moodle-docker-compose down && bin/moodle-docker-compose up -d` to recreate your environment.
 
 | Environment Variable                      | Mandatory | Allowed values                        | Default value | Notes                                                                        |
 |-------------------------------------------|-----------|---------------------------------------|---------------|------------------------------------------------------------------------------|
 | `MOODLE_DOCKER_DB`                        | yes       | pgsql, mariadb, mysql, mssql, oracle  | none          | The database server to run against                                           |
 | `MOODLE_DOCKER_WWWROOT`                   | yes       | path on your file system              | none          | The path to the Moodle codebase you intend to test                           |
 | `MOODLE_DOCKER_PHP_VERSION`               | no        | 7.4, 7.3, 7.2, 7.1, 7.0, 5.6          | 7.3           | The php version to use                                                       |
-| `MOODLE_DOCKER_BROWSER`                   | no        | firefox, chrome                       | firefox       | The browser to run Behat against                                             |
+| `MOODLE_DOCKER_BROWSER`                   | no        | firefox, chrome,  firefox:&lt;tag&gt;, chrome:&lt;tag&gt; | firefox:3       | The browser to run Behat against. Supports a colon notation to specify a specific Selenium docker image version to use. e.g. firefox:2.53.1 can be used to run with older versions of Moodle (<3.5)              |
 | `MOODLE_DOCKER_PHPUNIT_EXTERNAL_SERVICES` | no        | any value                             | not set       | If set, dependencies for memcached, redis, solr, and openldap are added      |
 | `MOODLE_DOCKER_WEB_HOST`                  | no        | any valid hostname                    | localhost     | The hostname for web                                |
 | `MOODLE_DOCKER_WEB_PORT`                  | no        | any integer value (or bind_ip:integer)| 127.0.0.1:8000| The port number for web. If set to 0, no port is used.<br/>If you want to bind to any host IP different from the default 127.0.0.1, you can specify it with the bind_ip:port format (0.0.0.0 means bind to all) |

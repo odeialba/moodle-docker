@@ -152,9 +152,29 @@ then
 fi
 
 # Selenium browser
-if [[ ! -z "$MOODLE_DOCKER_BROWSER" ]] && [[ "$MOODLE_DOCKER_BROWSER" != "firefox" ]];
+browserparts=(${MOODLE_DOCKER_BROWSER//:/ })
+export MOODLE_DOCKER_BROWSER_NAME=${browserparts[0]}
+export MOODLE_DOCKER_BROWSER_TAG=${browserparts[1]}
+
+if [[ -z "$MOODLE_DOCKER_BROWSER_NAME" ]];
 then
-    ymlfiles+=("selenium.${MOODLE_DOCKER_BROWSER}")
+    MOODLE_DOCKER_BROWSER_NAME=chrome
+fi
+
+if [[ -z "$MOODLE_DOCKER_BROWSER_TAG" ]];
+then
+    if [[ "$MOODLE_DOCKER_BROWSER_NAME" = "firefox" ]];
+    then
+        MOODLE_DOCKER_BROWSER_TAG=3
+    elif [[ "$MOODLE_DOCKER_BROWSER_NAME" = "chrome" ]];
+    then
+        MOODLE_DOCKER_BROWSER_TAG=3
+    fi
+fi
+
+if [[ ! -z "$MOODLE_DOCKER_BROWSER_NAME" ]] && [[ "$MOODLE_DOCKER_BROWSER_NAME" != "firefox" ]];
+then
+    ymlfiles+=("selenium.${MOODLE_DOCKER_BROWSER_NAME}")
 fi
 
 # Selenium VNC port
