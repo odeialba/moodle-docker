@@ -38,7 +38,7 @@ for var in "$@"; do
         php8|php80|php.80|php8.0|php.8.0)
             export MOODLE_DOCKER_PHP_VERSION=8.0
             ;;
-        php70|php.74|php7.4|php.7.4)
+        php74|php.74|php7.4|php.7.4)
             export MOODLE_DOCKER_PHP_VERSION=7.4
             ;;
         php73|php.73|php7.3|php.7.3)
