@@ -9,7 +9,7 @@ fi
 
 # Set default environment variables
 # PHP Version.
-export MOODLE_DOCKER_PHP_VERSION=${MOODLE_DOCKER_PHP_VERSION:-7.4}
+export MOODLE_DOCKER_PHP_VERSION=${MOODLE_DOCKER_PHP_VERSION:-8.0}
 # Database.
 export MOODLE_DOCKER_DB=${MOODLE_DOCKER_DB:-pgsql}
 # Webserver host (don't forget to add this to /etc/hosts)
@@ -17,7 +17,7 @@ export MOODLE_DOCKER_WEB_HOST=${MOODLE_DOCKER_WEB_HOST:-moodle.local}
 # Webserver port
 export MOODLE_DOCKER_WEB_PORT=${MOODLE_DOCKER_WEB_PORT:-80}
 # Selenium web browser.
-export MOODLE_DOCKER_BROWSER=${MOODLE_DOCKER_BROWSER:-chrome}
+export MOODLE_DOCKER_BROWSER=${MOODLE_DOCKER_BROWSER:-firefox}
 # Selenium port for VNC (to be able to see behat tests in action)
 export MOODLE_DOCKER_SELENIUM_VNC_PORT=${MOODLE_DOCKER_SELENIUM_VNC_PORT:-54321}
 
@@ -53,7 +53,7 @@ for var in "$@"; do
         php7|php70|php.70|php7.0|php.7.0)
             export MOODLE_DOCKER_PHP_VERSION=7.0
             ;;
-        chrome|firefox)
+        chrome|firefox|chromium)
             export MOODLE_DOCKER_BROWSER=$var
             ;;
         up)

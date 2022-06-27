@@ -28,5 +28,10 @@ services:
   selenium:
     image: "selenium/standalone-firefox${MOODLE_DOCKER_SELENIUM_SUFFIX}:${MOODLE_DOCKER_BROWSER_TAG}"
     container_name: "selenium"
+    build:
+      context: "."
+      dockerfile: "./dockerfiles/Dockerfileselenium"
+      args:
+        MOODLE_DOCKER_BROWSER_TAG: "${MOODLE_DOCKER_BROWSER_TAG}"
     volumes:
       - "${MOODLE_DOCKER_WWWROOT}:/var/www/html:ro"

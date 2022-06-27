@@ -1,0 +1,4 @@
+ARG MOODLE_DOCKER_BROWSER_TAG=3
+FROM "selenium/standalone-firefox-debug:${MOODLE_DOCKER_BROWSER_TAG}"
+
+ENV ARCH=arm64
