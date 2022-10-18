@@ -268,6 +268,31 @@ services:
       - "/opt/data:/opt/data:cached"
 ```
 
+## Local customisations
+
+In some situations you may wish to add local customisations, such as including additional containers, or changing existing containers.
+
+This can be accomplished by specifying a `local.yml`, which will be added in and loaded with the existing yml configuration files automatically. For example:
+
+``` file="local.yml"
+version: "2"
+services:
+
+  # Add the adminer image at the latest tag on port 8080:8080
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - "db"
+
+  # Modify the webserver image to add another volume:
+  webserver:
+    volumes:
+      - "/opt/data:/opt/data:cached"
+```
+
 ## Using XDebug for live debugging
 
 The XDebug PHP Extension is not included in this setup and there are reasons not to include it by default.
