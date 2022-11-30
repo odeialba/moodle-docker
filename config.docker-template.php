@@ -4,13 +4,41 @@ unset($CFG);
 global $CFG;
 $CFG = new stdClass();
 
+// This returns the version of the current Moodle instance.
+function getversion() {
+    define('MATURITY_ALPHA', 50);
+    define('MATURITY_BETA', 100);
+    define('MATURITY_RC', 150);
+    define('MATURITY_STABLE', 200);
+    define('ANY_VERSION', 'any');
+    define('MOODLE_INTERNAL', true);
+
+    require(__DIR__ . '/version.php');
+    $version = $branch;
+
+    //pecl install -f runkit7
+    //You should add "extension=runkit7.so" to php.ini
+    //echo "extension=runkit7.so" > /usr/local/etc/php/conf.d/docker-php-runkit7.ini
+    runkit7_constant_remove('MATURITY_ALPHA');
+    runkit7_constant_remove('MATURITY_BETA');
+    runkit7_constant_remove('MATURITY_RC');
+    runkit7_constant_remove('MATURITY_STABLE');
+    runkit7_constant_remove('ANY_VERSION');
+    //runkit7_constant_remove('MOODLE_INTERNAL');
+
+    return $version;
+}
+
+$version = '';//getversion();
+$type = basename(dirname(__FILE__));
+
 $CFG->dbtype    = getenv('MOODLE_DOCKER_DBTYPE');
 $CFG->dblibrary = 'native';
 $CFG->dbhost    = 'db';
 $CFG->dbname    = getenv('MOODLE_DOCKER_DBNAME');
 $CFG->dbuser    = getenv('MOODLE_DOCKER_DBUSER');
 $CFG->dbpass    = getenv('MOODLE_DOCKER_DBPASS');
-$CFG->prefix    = 'm_';
+$CFG->prefix = 'm' . $type . $version . '_';
 $CFG->dboptions = ['dbcollation' => getenv('MOODLE_DOCKER_DBCOLLATION')];
 
 if (getenv('MOODLE_DOCKER_DBTYPE') === 'sqlsrv') {
@@ -48,11 +76,21 @@ if (strpos($_SERVER['HTTP_HOST'], '.gitpod.io') !== false) {
     }
 }
 
+$CFG->wwwroot .= "/$type";
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
 $CFG->directorypermissions = 0777;
 $CFG->smtphosts = 'mailpit:1025';
 $CFG->noreplyaddress = 'noreply@example.com';
+
+// Prevent JS caching
+//$CFG->cachejs = false; // NOT FOR PRODUCTION SERVERS!
+// Prevent Template caching
+//$CFG->cachetemplates = false; // NOT FOR PRODUCTION SERVERS!
+// Prevent theme caching
+//$CFG->themedesignermode = true; // NOT FOR PRODUCTION SERVERS!
+// Prevent sending of emails
+//$CFG->noemailever = true;    // NOT FOR PRODUCTION SERVERS!
 
 // Debug options - possible to be controlled by flag in future..
 $CFG->debug = (E_ALL | E_STRICT); // DEBUG_DEVELOPER
@@ -64,15 +102,16 @@ $CFG->allowthemechangeonurl = 1;
 $CFG->passwordpolicy = 0;
 $CFG->cronclionly = 0;
 $CFG->pathtophp = '/usr/local/bin/php';
+$CFG->forcewpsetup = true;
 
 $CFG->phpunit_dataroot  = '/var/www/phpunitdata';
-$CFG->phpunit_prefix = 't_';
+$CFG->phpunit_prefix = 't' . $type . $version . '_';
 define('TEST_EXTERNAL_FILES_HTTP_URL', 'http://exttests:9000');
 define('TEST_EXTERNAL_FILES_HTTPS_URL', 'http://exttests:9000');
 
-$CFG->behat_wwwroot   = 'http://webserver';
+$CFG->behat_wwwroot   = 'http://webserver/' . $type;
 $CFG->behat_dataroot  = '/var/www/behatdata';
-$CFG->behat_prefix = 'b_';
+$CFG->behat_prefix = 'b' . $type . $version . '_';
 $CFG->behat_profiles = array(
     'default' => array(
         'browser' => getenv('MOODLE_DOCKER_BROWSER'),

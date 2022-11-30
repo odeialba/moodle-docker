@@ -1,0 +1,58 @@
+ARG MOODLE_DOCKER_PHP_VERSION=8.0
+FROM moodlehq/moodle-php-apache:${MOODLE_DOCKER_PHP_VERSION}
+
+# Install essentials
+RUN apt-get update
+RUN apt-get install -my mc nano tree gnupg curl libtool libssl-dev m4 python-is-python3
+
+# Runkit7
+RUN pecl install -f runkit7
+COPY assets/web/php/runkit7.ini /usr/local/etc/php/conf.d/docker-php-runkit7.ini
+
+# uopz
+# Install uopz extension and configure to allow the execution of exit opcodes
+# (this is needed for behat).
+# For PHP7 install version 6.1.2, for PHP8 install the latest available version
+RUN php -r "exit(version_compare(PHP_VERSION, '8.0.0') == -1 ? 0 : 1);"  && \
+        pecl install -f uopz-6.1.2 || pecl install -f uopz
+COPY assets/web/php/uopz.ini /usr/local/etc/php/conf.d/docker-php-uopz.ini
+
+# Xdebug
+RUN pecl install -f xdebug && docker-php-ext-enable xdebug
+COPY assets/web/php/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+# composer
+RUN curl -sS https://getcomposer.org/installer | php -- --filename=composer --install-dir=/usr/local/bin
+
+# Custom commands
+COPY assets/web/commands/minstall /usr/local/bin/minstall
+RUN chmod +x /usr/local/bin/minstall
+COPY assets/web/commands/mtest /usr/local/bin/mtest
+RUN chmod +x /usr/local/bin/mtest
+COPY assets/web/commands/mutil /usr/local/bin/mutil
+RUN chmod +x /usr/local/bin/mutil
+COPY assets/web/commands/mcommon /usr/local/bin/mcommon
+RUN chmod +x /usr/local/bin/mcommon
+COPY assets/web/commands/mfixversion /usr/local/bin/mfixversion
+RUN chmod +x /usr/local/bin/mfixversion
+COPY assets/web/scripts /var/www/scripts
+
+# nvm
+ENV NVM_DIR /root/.nvm
+# ENV NODE_VERSION 16.14.0
+# ENV NODE_VERSION 14.18.0
+ENV NODE_VERSION 16.15.1
+# ENV NODE_VERSION 17.9.1
+# RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+# RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
+# RUN bash -c "source ~/.bashrc"
+RUN bash -c ". /root/.nvm/nvm.sh --install && nvm install $NODE_VERSION && nvm alias default $NODE_VERSION && nvm use default"
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+# ENV npm_config_user=root
+# RUN nvm install node
+
+# Grunt
+# RUN npm install
+# RUN npm install -g --save-dev grunt grunt-cli grunt-contrib-watch grunt-contrib-uglify grunt-contrib-less grunt-load-gruntfile grunt-eslint grunt-babel grunt-jsdoc grunt-sass grunt-stylelint grunt-rollup

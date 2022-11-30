@@ -240,6 +240,8 @@ fi
 if [[ "$(uname)" == "Darwin" ]]; then
     # Support https://docs.docker.com/docker-for-mac/osxfs-caching/
     dockercompose="${dockercompose} -f ${basedir}/volumes-cached.yml"
+    # https://vivait.co.uk/labs/docker-for-mac-performance-using-nfs
+    #dockercompose="${dockercompose} -f ${basedir}/volumes-nfs.yml"
 fi
 
 # Apply local customisations if a local.yml is found.

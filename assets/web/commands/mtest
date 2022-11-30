@@ -1,0 +1,21 @@
+DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. "$DIR/mcommon"
+
+case "$1" in
+	phpunit)
+		cd ${dir}
+		eval "vendor/bin/phpunit ${command}"
+		cd ..
+		;;
+	behat)
+		if [ "${dir}" != "" ]; then
+			dir="${dir}/"
+		fi
+		eval "php ${dir}admin/tool/behat/cli/run.php ${command}"
+		;;
+	*)
+		SCRIPT_NAME=`basename "$0"`
+		echo "Usage: $SCRIPT_NAME {phpunit|behat} [-d subdirectory] [arguments]"
+        exit 1
+esac
