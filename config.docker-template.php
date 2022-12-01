@@ -121,7 +121,7 @@ $CFG->behat_profiles = array(
 $CFG->behat_faildump_path = '/var/www/behatfaildumps';
 $CFG->behat_increasetimeout = getenv('MOODLE_DOCKER_TIMEOUT_FACTOR');
 
-if (getenv('MOODLE_DOCKER_DBHOST') === 'db-oracle') {
+if (getenv('MOODLE_DOCKER_DB') === 'oracle') {
     $CFG->prefix = 'm_';
     $CFG->phpunit_prefix = 't_';
     $CFG->behat_prefix = 'b_';
