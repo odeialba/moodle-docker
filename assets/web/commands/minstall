@@ -8,7 +8,7 @@ fi
 
 case "$1" in
 	moodle)
-		eval "php ${dir}admin/cli/install_database.php --agree-license --fullname=\"Moodle\" --shortname=\"moodle\" --summary=\"Moodle site\" --adminpass=\"admin\" --adminemail=\"admin@example.com\" --supportemail=\"admin@example.com\" ${command}"
+		eval "php ${dir}admin/cli/install_database.php --agree-license --fullname=\"Moodle\" --shortname=\"moodle\" --summary=\"Moodle site\" --adminpass=\"admin\" --adminemail=\"admin@example.com\" ${command}"
 		;;
 	phpunit)
 		eval "php ${dir}admin/tool/phpunit/cli/init.php ${command}"
