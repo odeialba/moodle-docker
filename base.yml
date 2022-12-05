@@ -1,6 +1,7 @@
 services:
   webserver:
     image: "moodlehq/moodle-php-apache:${MOODLE_DOCKER_PHP_VERSION}"
+    container_name: "webserver"
     build:
       context: "."
       dockerfile: "./dockerfiles/Dockerfilewebserver"
