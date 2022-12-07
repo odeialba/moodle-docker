@@ -1,0 +1,17 @@
+version: "2"
+services:
+  webserver:
+    container_name: "webserver"
+    build:
+      context: "."
+      dockerfile: "./dockerfiles/Dockerfilewebserver"
+      args:
+        MOODLE_DOCKER_PHP_VERSION: "${MOODLE_DOCKER_PHP_VERSION}"
+  db:
+    container_name: "db"
+  exttests:
+    container_name: "exttests"
+  selenium:
+    container_name: "selenium"
+  mailhog:
+    container_name: "mailhog"
