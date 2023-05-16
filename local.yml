@@ -13,5 +13,5 @@ services:
     container_name: "exttests"
   selenium:
     container_name: "selenium"
-  mailhog:
-    container_name: "mailhog"
+  mailpit:
+    container_name: "mailpit"
