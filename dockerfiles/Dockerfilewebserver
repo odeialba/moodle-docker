@@ -1,4 +1,4 @@
-ARG MOODLE_DOCKER_PHP_VERSION=8.0
+ARG MOODLE_DOCKER_PHP_VERSION=8.1
 FROM moodlehq/moodle-php-apache:${MOODLE_DOCKER_PHP_VERSION}
 
 # Install essentials
@@ -51,8 +51,8 @@ RUN bash -c ". /root/.nvm/nvm.sh --install && nvm install $NODE_VERSION && nvm a
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 # ENV npm_config_user=root
-# RUN nvm install node
+RUN nvm install node
 
 # Grunt
-# RUN npm install
-# RUN npm install -g --save-dev grunt grunt-cli grunt-contrib-watch grunt-contrib-uglify grunt-contrib-less grunt-load-gruntfile grunt-eslint grunt-babel grunt-jsdoc grunt-sass grunt-stylelint grunt-rollup
+RUN npm install
+RUN npm install -g --save-dev grunt grunt-cli grunt-contrib-watch grunt-contrib-uglify grunt-contrib-less grunt-load-gruntfile grunt-eslint grunt-babel grunt-jsdoc grunt-sass grunt-stylelint grunt-rollup
