@@ -7,11 +7,17 @@ services:
       dockerfile: "./dockerfiles/Dockerfilewebserver"
       args:
         MOODLE_DOCKER_PHP_VERSION: "${MOODLE_DOCKER_PHP_VERSION}"
+    environment:
+      # MOODLE_DOCKER_BROWSER: chrome
+      MOODLE_DOCKER_BROWSER: firefox
   db:
     container_name: "db"
   exttests:
     container_name: "exttests"
   selenium:
     container_name: "selenium"
+    # image: "selenium/standalone-chrome${MOODLE_DOCKER_SELENIUM_SUFFIX:-}:${MOODLE_DOCKER_BROWSER_TAG}"
+    # image: "seleniarm/standalone-chromium:latest"
+    image: "seleniarm/standalone-firefox:latest"
   mailpit:
     container_name: "mailpit"
