@@ -2,8 +2,8 @@ services:
   webserver:
     container_name: "webserver"
     build:
-      context: "."
-      dockerfile: "./dockerfiles/Dockerfilewebserver"
+      context: "${PWD}"  # Ensure this is the directory containing your Dockerfilewebserver
+      dockerfile: "dockerfiles/Dockerfilewebserver"       # Path relative to context
       args:
         MOODLE_DOCKER_PHP_VERSION: "${MOODLE_DOCKER_PHP_VERSION}"
     environment:
