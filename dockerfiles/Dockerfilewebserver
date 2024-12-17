@@ -1,4 +1,4 @@
-ARG MOODLE_DOCKER_PHP_VERSION=8.1
+ARG MOODLE_DOCKER_PHP_VERSION=8.3
 FROM moodlehq/moodle-php-apache:${MOODLE_DOCKER_PHP_VERSION}
 
 # Install essentials
@@ -37,22 +37,18 @@ COPY assets/web/commands/mfixversion /usr/local/bin/mfixversion
 RUN chmod +x /usr/local/bin/mfixversion
 COPY assets/web/scripts /var/www/scripts
 
-# nvm
+# Install nvm
 ENV NVM_DIR /root/.nvm
-# ENV NODE_VERSION 16.14.0
-# ENV NODE_VERSION 14.18.0
-# ENV NODE_VERSION 16.15.1
-# ENV NODE_VERSION 17.9.1
 ENV NODE_VERSION 20.11.0
-# RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-# RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
-# RUN bash -c "source ~/.bashrc"
-RUN bash -c ". /root/.nvm/nvm.sh --install && nvm install $NODE_VERSION && nvm alias default $NODE_VERSION && nvm use default"
-ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+
+# Ensure nvm is available by sourcing the nvm script explicitly for every subsequent RUN command
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm alias default $NODE_VERSION && nvm use default"
+
+# Now that node is installed, update PATH to include node binaries
 ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
-# ENV npm_config_user=root
-RUN nvm install node
+# Check if package.json exists, if not, initialize it
+RUN [ ! -f /var/www/html/package.json ] && npm init -y
 
 # Grunt
 RUN npm install
