@@ -6,6 +6,7 @@ case "$1" in
 	phpunit)
 		cd ${dir}
 		eval "vendor/bin/phpunit ${command}"
+		# eval "php admin/tool/phpunit/cli/util.php --run ${command}"
 		cd ..
 		;;
 	behat)

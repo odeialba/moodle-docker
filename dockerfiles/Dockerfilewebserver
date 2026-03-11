@@ -6,7 +6,7 @@ RUN apt-get update
 RUN apt-get install -my mc nano tree gnupg curl libtool libssl-dev m4 python-is-python3
 
 # Runkit7
-RUN pecl install -f runkit7
+#RUN pecl install -f runkit7
 COPY assets/web/php/runkit7.ini /usr/local/etc/php/conf.d/docker-php-runkit7.ini
 
 # uopz
@@ -39,7 +39,7 @@ COPY assets/web/scripts /var/www/scripts
 
 # Install nvm
 ENV NVM_DIR /root/.nvm
-ENV NODE_VERSION 20.11.0
+ENV NODE_VERSION 22.11.0
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
 
 # Ensure nvm is available by sourcing the nvm script explicitly for every subsequent RUN command
